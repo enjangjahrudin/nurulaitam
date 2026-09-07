@@ -251,6 +251,51 @@ app.post('/api/admin/login', async (req, res) => {
   }
 });
 
+// 4b. Ganti Kata Sandi Admin (Admin - Butuh Token)
+app.post('/api/admin/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Kata sandi lama dan kata sandi baru wajib diisi.' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Kata sandi baru minimal 6 karakter.' });
+    }
+
+    if (confirmPassword && newPassword !== confirmPassword) {
+      return res.status(400).json({ message: 'Konfirmasi kata sandi baru tidak cocok.' });
+    }
+
+    // Ambil data admin saat ini berdasarkan ID dari token
+    const rows = await db.query('SELECT * FROM admins WHERE id = ?', [req.admin.id]);
+    const admin = rows[0];
+
+    if (!admin) {
+      return res.status(404).json({ message: 'Akun admin tidak ditemukan.' });
+    }
+
+    // Verifikasi kata sandi lama
+    const isMatch = bcrypt.compareSync(currentPassword, admin.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Kata sandi lama salah.' });
+    }
+
+    // Hash kata sandi baru
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(newPassword, salt);
+
+    // Update password di database
+    await db.query('UPDATE admins SET password = ? WHERE id = ?', [hashedPassword, req.admin.id]);
+
+    res.json({ message: 'Kata sandi admin berhasil diperbarui!' });
+  } catch (error) {
+    console.error('Error saat ganti password admin:', error);
+    res.status(500).json({ message: 'Gagal memperbarui kata sandi.' });
+  }
+});
+
 // 5. Ambil Semua Donasi (Admin - Butuh Token)
 app.get('/api/admin/donations', authenticateToken, async (req, res) => {
   try {

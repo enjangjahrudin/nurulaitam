@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, DollarSign, Users, Award, FileText, CheckCircle, XCircle, PlusCircle, Search, Download, LogOut, Upload, User, Phone, Mail, Image as ImageIcon, Printer } from 'lucide-react';
+import { Layout, DollarSign, Users, Award, FileText, CheckCircle, XCircle, PlusCircle, Search, Download, LogOut, Upload, User, Phone, Mail, Image as ImageIcon, Printer, Lock } from 'lucide-react';
 import ReceiptPDF from './ReceiptPDF';
 
 export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
@@ -48,6 +48,15 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
   const [programForm, setProgramForm] = useState({ title: '', schedule: '', desc: '' });
   const [programFile, setProgramFile] = useState(null);
   const [achievementForm, setAchievementForm] = useState({ year: '', title: '', desc: '' });
+
+  // Password Change States
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState({ type: '', message: '' });
 
   // Fetch seluruh data donasi untuk admin (termasuk pending & offline)
   const fetchAdminData = async () => {
@@ -250,6 +259,45 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
       fetchCMSData();
     } catch (err) {
       alert(err.message || 'Gagal menyimpan pengaturan.');
+    }
+  };
+
+  // 1b. Change Password
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordStatus({ type: '', message: '' });
+
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordStatus({ type: 'error', message: 'Kata sandi baru minimal 6 karakter.' });
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordStatus({ type: 'error', message: 'Konfirmasi kata sandi baru tidak cocok.' });
+      return;
+    }
+
+    setPasswordLoading(true);
+
+    try {
+      const res = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminSession.token}`
+        },
+        body: JSON.stringify(passwordForm)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Gagal mengubah kata sandi.');
+
+      setPasswordStatus({ type: 'success', message: 'Kata sandi admin berhasil diperbarui!' });
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      setPasswordStatus({ type: 'error', message: err.message });
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -1615,6 +1663,82 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                     />
                   </div>
                   <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '14px' }}>Simpan Seluruh Perubahan</button>
+                </form>
+              </div>
+            </div>
+
+            {/* KARTU KEAMANAN & GANTI KATA SANDI */}
+            <div className="donate-card" style={{ marginTop: '32px' }}>
+              <div className="donate-form-body">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                  <Lock size={22} style={{ color: 'var(--color-emerald-800)' }} />
+                  <h3 className="serif-title" style={{ fontSize: '20px', color: 'var(--color-emerald-950)', margin: 0 }}>Keamanan Akun & Ganti Kata Sandi</h3>
+                </div>
+                <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '24px' }}>
+                  Perbarui kata sandi akun admin pengurus untuk melindungi akses ke dashboard yayasan.
+                </p>
+
+                {passwordStatus.message && (
+                  <div style={{
+                    padding: '12px 16px',
+                    borderRadius: 'var(--radius-sm)',
+                    marginBottom: '20px',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    background: passwordStatus.type === 'success' ? '#e8f5e9' : '#ffebee',
+                    color: passwordStatus.type === 'success' ? '#2e7d32' : '#c62828',
+                    border: `1px solid ${passwordStatus.type === 'success' ? '#a5d6a7' : '#ef9a9a'}`
+                  }}>
+                    {passwordStatus.type === 'success' ? '✅ ' : '⚠️ '}
+                    {passwordStatus.message}
+                  </div>
+                )}
+
+                <form onSubmit={handleChangePassword}>
+                  <div className="form-group">
+                    <label>Kata Sandi Saat Ini (Lama) *</label>
+                    <input
+                      type="password"
+                      className="form-input"
+                      placeholder="Masukkan kata sandi lama"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Kata Sandi Baru * (Minimal 6 karakter)</label>
+                    <input
+                      type="password"
+                      className="form-input"
+                      placeholder="Masukkan kata sandi baru"
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Konfirmasi Kata Sandi Baru *</label>
+                    <input
+                      type="password"
+                      className="form-input"
+                      placeholder="Ketik ulang kata sandi baru"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary" 
+                    style={{ width: '100%', padding: '14px' }}
+                    disabled={passwordLoading}
+                  >
+                    {passwordLoading ? 'Menyimpan Kata Sandi...' : 'Perbarui Kata Sandi'}
+                  </button>
                 </form>
               </div>
             </div>
