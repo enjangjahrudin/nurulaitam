@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, DollarSign, Users, Award, FileText, CheckCircle, XCircle, PlusCircle, Search, Download, LogOut, Upload, User, Phone, Mail, Image as ImageIcon, Printer, Lock, Menu, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Layout, DollarSign, Users, Award, FileText, CheckCircle, XCircle, PlusCircle, Search, Download, LogOut, Upload, User, Phone, Mail, Image as ImageIcon, Printer, Lock, Menu, ChevronLeft, ChevronRight, ArrowLeft, CreditCard, Edit, Trash2 } from 'lucide-react';
 import ReceiptPDF from './ReceiptPDF';
 
 export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
@@ -77,6 +77,20 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
   const [adminAddLoading, setAdminAddLoading] = useState(false);
   const [adminAddStatus, setAdminAddStatus] = useState({ type: '', message: '' });
 
+  // Payment Methods States
+  const [paymentMethodsList, setPaymentMethodsList] = useState([]);
+  const [editingMethodId, setEditingMethodId] = useState(null);
+  const [methodForm, setMethodForm] = useState({
+    name: '',
+    account_number: '',
+    account_holder: '',
+    type: 'TRANSFER',
+    is_active: 1,
+    instructions: ''
+  });
+  const [methodLoading, setMethodLoading] = useState(false);
+  const [methodStatus, setMethodStatus] = useState({ type: '', message: '' });
+
   // Fetch seluruh data donasi untuk admin (termasuk pending & offline)
   const fetchAdminData = async () => {
     setLoading(true);
@@ -140,11 +154,24 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
     }
   };
 
+  const fetchPaymentMethods = async () => {
+    try {
+      const res = await fetch('/api/payment-methods');
+      if (res.ok) {
+        const data = await res.json();
+        setPaymentMethodsList(data);
+      }
+    } catch (err) {
+      console.error("Gagal memuat metode pembayaran:", err);
+    }
+  };
+
   useEffect(() => {
     if (adminSession?.token) {
       fetchAdminData();
       fetchCMSData();
       fetchAdmins();
+      fetchPaymentMethods();
     }
   }, [adminSession]);
 
@@ -402,6 +429,76 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
       fetchAdmins();
     } catch (err) {
       alert(err.message);
+    }
+  };
+
+  // 1d. Kelola Metode Pembayaran & Rekening Transfer
+  const handleSavePaymentMethod = async (e) => {
+    e.preventDefault();
+    setMethodStatus({ type: '', message: '' });
+
+    if (!methodForm.name) {
+      setMethodStatus({ type: 'error', message: 'Nama metode pembayaran wajib diisi.' });
+      return;
+    }
+
+    setMethodLoading(true);
+    try {
+      const url = editingMethodId 
+        ? `/api/admin/payment-methods/${editingMethodId}`
+        : '/api/admin/payment-methods';
+      const httpMethod = editingMethodId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: httpMethod,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminSession.token}`
+        },
+        body: JSON.stringify(methodForm)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Gagal menyimpan metode pembayaran.');
+
+      setMethodStatus({ type: 'success', message: data.message || 'Metode pembayaran berhasil disimpan!' });
+      setMethodForm({ name: '', account_number: '', account_holder: '', type: 'TRANSFER', is_active: 1, instructions: '' });
+      setEditingMethodId(null);
+      fetchPaymentMethods();
+    } catch (err) {
+      setMethodStatus({ type: 'error', message: err.message });
+    } finally {
+      setMethodLoading(false);
+    }
+  };
+
+  const handleEditPaymentMethod = (m) => {
+    setEditingMethodId(m.id);
+    setMethodForm({
+      name: m.name || '',
+      account_number: m.account_number || '',
+      account_holder: m.account_holder || '',
+      type: m.type || 'TRANSFER',
+      is_active: m.is_active !== undefined ? m.is_active : 1,
+      instructions: m.instructions || ''
+    });
+    setMethodStatus({ type: '', message: '' });
+  };
+
+  const handleDeletePaymentMethod = async (id, name) => {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus pilihan transfer "${name}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/payment-methods/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${adminSession.token}`
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Gagal menghapus.');
+      fetchPaymentMethods();
+    } catch (err) {
+      alert(err.message || 'Gagal menghapus metode pembayaran.');
     }
   };
 
@@ -846,6 +943,16 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                 <span className="sidebar-btn-text">Buku Kas Ledger</span>
               </button>
             </li>
+            <li>
+              <button 
+                onClick={() => setActiveTab('methods')} 
+                className={`sidebar-btn ${activeTab === 'methods' ? 'active' : ''}`}
+                title="Pilihan Transfer & Bank"
+              >
+                <CreditCard size={17} />
+                <span className="sidebar-btn-text">Pilihan Transfer</span>
+              </button>
+            </li>
           </ul>
 
           {/* Menu Bagian 2: CMS & KONTEN */}
@@ -939,6 +1046,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                   {activeTab === 'pending' && `Verifikasi Bukti Transfer (${pendingDonations.length})`}
                   {activeTab === 'offline' && 'Catat Penerimaan Donasi Manual'}
                   {activeTab === 'ledger' && 'Buku Besar Laporan Donasi'}
+                  {activeTab === 'methods' && 'Kelola Pilihan Transfer & Rekening Bank'}
                   {activeTab === 'articles' && 'Kelola Kabar & Artikel Dakwah'}
                   {activeTab === 'gallery' && 'Kelola Galeri Foto Dokumentasi'}
                   {activeTab === 'programs' && 'Kelola Program Asuhan & Prestasi'}
@@ -950,6 +1058,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                   {activeTab === 'pending' && 'Tinjau bukti transfer rekening bank yang dikirimkan donatur'}
                   {activeTab === 'offline' && 'Input manual donasi langsung, kotak amal, atau jemput zakat'}
                   {activeTab === 'ledger' && 'Daftar riwayat seluruh donasi masuk yang telah terverifikasi'}
+                  {activeTab === 'methods' && 'Atur daftar nomor rekening bank, e-wallet, atau opsi setor tunai yang muncul pada form donasi'}
                   {activeTab === 'articles' && 'Publikasi artikel, berita, dan kabar kegiatan santri yayasan'}
                   {activeTab === 'gallery' && 'Unggah dokumentasi foto kegiatan sosial dan santri'}
                   {activeTab === 'programs' && 'Atur program santunan dan dokumentasi prestasi anak asuh'}
@@ -1260,10 +1369,19 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                       value={offlineForm.payment_method}
                       onChange={(e) => setOfflineForm(prev => ({ ...prev, payment_method: e.target.value }))}
                     >
-                      <option value="Tunai">Tunai / Cash Langsung</option>
-                      <option value="Manual WA (BCA)">Transfer Manual Konfirmasi WA (Ke BCA)</option>
-                      <option value="Manual WA (Mandiri)">Transfer Manual Konfirmasi WA (Ke Mandiri)</option>
-                      <option value="Kotak Amal">Kotak Amal Keliling</option>
+                      {paymentMethodsList.filter(m => m.is_active === 1).map((m) => (
+                        <option key={m.id} value={m.name}>
+                          {m.name} {m.account_number ? `(${m.account_number})` : ''}
+                        </option>
+                      ))}
+                      {paymentMethodsList.filter(m => m.is_active === 1).length === 0 && (
+                        <>
+                          <option value="Tunai / Cash Langsung">Tunai / Cash Langsung</option>
+                          <option value="Transfer Manual Konfirmasi WA (Ke BCA)">Transfer Manual Konfirmasi WA (Ke BCA)</option>
+                          <option value="Transfer Manual Konfirmasi WA (Ke Mandiri)">Transfer Manual Konfirmasi WA (Ke Mandiri)</option>
+                          <option value="Kotak Amal Keliling">Kotak Amal Keliling</option>
+                        </>
+                      )}
                     </select>
                   </div>
 
@@ -1968,6 +2086,310 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                         <tr>
                           <td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
                             Memuat daftar pengurus...
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* TAB: KELOLA PILIHAN TRANSFER & REKENING BANK */}
+        {activeTab === 'methods' && (
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px', alignItems: 'start' }}>
+              
+              {/* Kolom 1: Form Tambah / Edit Pilihan Transfer */}
+              <div className="donate-card" style={{ margin: 0, padding: 0 }}>
+                <div className="donate-form-body" style={{ padding: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#ecfdf5', color: '#047857', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <CreditCard size={18} />
+                    </div>
+                    <div>
+                      <h3 className="serif-title" style={{ fontSize: '18px', color: 'var(--color-emerald-950)', margin: 0 }}>
+                        {editingMethodId ? 'Edit Pilihan Transfer' : 'Tambah Pilihan Transfer'}
+                      </h3>
+                      <p style={{ fontSize: '12.5px', color: 'var(--text-muted)', margin: 0 }}>
+                        {editingMethodId ? 'Perbarui data rekening atau saluran pembayaran' : 'Daftarkan saluran pembayaran baru ke dalam sistem'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {methodStatus.message && (
+                    <div style={{
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      marginTop: '16px',
+                      marginBottom: '16px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      background: methodStatus.type === 'success' ? '#ecfdf5' : '#fef2f2',
+                      color: methodStatus.type === 'success' ? '#047857' : '#b91c1c',
+                      border: `1px solid ${methodStatus.type === 'success' ? '#a7f3d0' : '#fecaca'}`
+                    }}>
+                      {methodStatus.type === 'success' ? '✅ ' : '⚠️ '}
+                      {methodStatus.message}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSavePaymentMethod} style={{ marginTop: '16px' }}>
+                    <div className="form-group">
+                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                        Nama Metode / Saluran Transfer *
+                      </label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Contoh: Transfer BCA, Kas Kantor, QRIS"
+                        value={methodForm.name}
+                        onChange={(e) => setMethodForm(prev => ({ ...prev, name: e.target.value }))}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                        Tipe Saluran Pembayaran *
+                      </label>
+                      <select
+                        className="form-input"
+                        value={methodForm.type}
+                        onChange={(e) => setMethodForm(prev => ({ ...prev, type: e.target.value }))}
+                      >
+                        <option value="TRANSFER">Transfer Bank Manual</option>
+                        <option value="CASH">Tunai / Cash Langsung</option>
+                        <option value="EWALLET">E-Wallet / QRIS</option>
+                        <option value="OTHER">Kotak Amal / Lainnya</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                        Nomor Rekening / No. Akun (Opsional)
+                      </label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Contoh: 1098765432 (kosongkan jika tunai)"
+                        value={methodForm.account_number}
+                        onChange={(e) => setMethodForm(prev => ({ ...prev, account_number: e.target.value }))}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                        Atas Nama Rekening / Pemilik Akun (Opsional)
+                      </label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Contoh: YAYASAN NURUL AITAM"
+                        value={methodForm.account_holder}
+                        onChange={(e) => setMethodForm(prev => ({ ...prev, account_holder: e.target.value }))}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                        Status Keaktifan
+                      </label>
+                      <select
+                        className="form-input"
+                        value={methodForm.is_active}
+                        onChange={(e) => setMethodForm(prev => ({ ...prev, is_active: parseInt(e.target.value) }))}
+                      >
+                        <option value={1}>Aktif (Tampil di Pilihan Donasi)</option>
+                        <option value={0}>Non-Aktif (Disembunyikan Sementara)</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                        Instruksi Singkat / Petunjuk Transfer (Opsional)
+                      </label>
+                      <textarea
+                        className="form-input"
+                        rows="2"
+                        style={{ resize: 'none' }}
+                        placeholder="Petunjuk singkat untuk donatur saat memilih metode ini"
+                        value={methodForm.instructions}
+                        onChange={(e) => setMethodForm(prev => ({ ...prev, instructions: e.target.value }))}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                      <button
+                        type="submit"
+                        className="btn btn-primary"
+                        style={{ flex: 1, padding: '12px' }}
+                        disabled={methodLoading}
+                      >
+                        {methodLoading ? 'Menyimpan...' : (editingMethodId ? 'Simpan Perubahan' : 'Tambah Metode')}
+                      </button>
+                      {editingMethodId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingMethodId(null);
+                            setMethodForm({ name: '', account_number: '', account_holder: '', type: 'TRANSFER', is_active: 1, instructions: '' });
+                            setMethodStatus({ type: '', message: '' });
+                          }}
+                          className="btn btn-outline"
+                          style={{ padding: '12px 18px' }}
+                        >
+                          Batal
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              {/* Kolom 2: Daftar Pilihan Transfer & Rekening Bank */}
+              <div className="ledger-box" style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                        Daftar Pilihan Transfer & Saluran
+                      </h3>
+                      <span style={{ fontSize: '12px', fontWeight: 700, background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '9999px' }}>
+                        {paymentMethodsList.length}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '13px', color: '#64748b', margin: '3px 0 0 0' }}>
+                      Pilihan yang aktif akan otomatis muncul pada dropdown formulir donasi.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Nama & Tipe</th>
+                        <th>No. Rekening & A/N</th>
+                        <th style={{ textAlign: 'center' }}>Status</th>
+                        <th style={{ textAlign: 'center', width: '130px' }}>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paymentMethodsList.map((m) => {
+                        const typeLabels = {
+                          TRANSFER: { label: 'Transfer Bank', bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe' },
+                          CASH: { label: 'Tunai Langsung', bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0' },
+                          EWALLET: { label: 'E-Wallet / QRIS', bg: '#faf5ff', color: '#7e22ce', border: '#e9d5ff' },
+                          OTHER: { label: 'Lainnya', bg: '#f8fafc', color: '#475569', border: '#e2e8f0' }
+                        };
+                        const badge = typeLabels[m.type] || typeLabels.OTHER;
+
+                        return (
+                          <tr key={m.id}>
+                            <td>
+                              <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '14px' }}>
+                                {m.name}
+                              </div>
+                              <span style={{
+                                display: 'inline-block',
+                                fontSize: '11px',
+                                fontWeight: 600,
+                                background: badge.bg,
+                                color: badge.color,
+                                border: `1px solid ${badge.border}`,
+                                padding: '1px 8px',
+                                borderRadius: '9999px',
+                                marginTop: '4px'
+                              }}>
+                                {badge.label}
+                              </span>
+                            </td>
+                            <td>
+                              {m.account_number ? (
+                                <>
+                                  <div style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
+                                    {m.account_number}
+                                  </div>
+                                  {m.account_holder && (
+                                    <div style={{ fontSize: '11.5px', color: '#64748b' }}>
+                                      a.n. {m.account_holder}
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <span style={{ fontSize: '12.5px', color: '#94a3b8', fontStyle: 'italic' }}>
+                                  Tanpa No. Rekening
+                                </span>
+                              )}
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              {m.is_active === 1 ? (
+                                <span style={{ display: 'inline-block', fontSize: '11.5px', fontWeight: 600, background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '2px 8px', borderRadius: '9999px' }}>
+                                  Aktif
+                                </span>
+                              ) : (
+                                <span style={{ display: 'inline-block', fontSize: '11.5px', fontWeight: 600, background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '2px 8px', borderRadius: '9999px' }}>
+                                  Non-Aktif
+                                </span>
+                              )}
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditPaymentMethod(m)}
+                                  style={{
+                                    background: '#ffffff',
+                                    color: '#0284c7',
+                                    border: '1px solid #bae6fd',
+                                    padding: '5px 10px',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                  title="Edit pilihan transfer ini"
+                                >
+                                  <Edit size={13} />
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePaymentMethod(m.id, m.name)}
+                                  style={{
+                                    background: '#ffffff',
+                                    color: '#ef4444',
+                                    border: '1px solid #fecaca',
+                                    padding: '5px 10px',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                  title="Hapus pilihan transfer ini"
+                                >
+                                  <Trash2 size={13} />
+                                  Hapus
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {paymentMethodsList.length === 0 && (
+                        <tr>
+                          <td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
+                            Belum ada pilihan transfer. Silakan tambahkan pada formulir di sebelah kiri.
                           </td>
                         </tr>
                       )}

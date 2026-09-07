@@ -666,6 +666,58 @@ app.delete('/api/admin/achievements/:id', authenticateToken, async (req, res) =>
     res.status(500).json({ message: 'Gagal menghapus prestasi.' });
   }
 });
+// ==========================================
+// 14. Payment Methods API (Public & Admin CRUD)
+// ==========================================
+app.get('/api/payment-methods', async (req, res) => {
+  try {
+    const rows = await db.query('SELECT * FROM payment_methods ORDER BY id ASC');
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ message: 'Gagal mengambil data metode pembayaran.' });
+  }
+});
+
+app.post('/api/admin/payment-methods', authenticateToken, async (req, res) => {
+  try {
+    const { name, account_number, account_holder, type, is_active, instructions } = req.body;
+    if (!name) {
+      return res.status(400).json({ message: 'Nama metode pembayaran wajib diisi.' });
+    }
+    const [result] = await db.query(
+      'INSERT INTO payment_methods (name, account_number, account_holder, type, is_active, instructions) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, account_number || null, account_holder || null, type || 'TRANSFER', is_active !== undefined ? is_active : 1, instructions || null]
+    );
+    res.status(201).json({ message: 'Metode pembayaran berhasil ditambahkan.', id: result.insertId });
+  } catch (error) {
+    res.status(500).json({ message: 'Gagal menambahkan metode pembayaran.' });
+  }
+});
+
+app.put('/api/admin/payment-methods/:id', authenticateToken, async (req, res) => {
+  try {
+    const { name, account_number, account_holder, type, is_active, instructions } = req.body;
+    if (!name) {
+      return res.status(400).json({ message: 'Nama metode pembayaran wajib diisi.' });
+    }
+    await db.query(
+      'UPDATE payment_methods SET name = ?, account_number = ?, account_holder = ?, type = ?, is_active = ?, instructions = ? WHERE id = ?',
+      [name, account_number || null, account_holder || null, type || 'TRANSFER', is_active !== undefined ? is_active : 1, instructions || null, req.params.id]
+    );
+    res.json({ message: 'Metode pembayaran berhasil diperbarui.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Gagal memperbarui metode pembayaran.' });
+  }
+});
+
+app.delete('/api/admin/payment-methods/:id', authenticateToken, async (req, res) => {
+  try {
+    await db.query('DELETE FROM payment_methods WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Metode pembayaran berhasil dihapus.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Gagal menghapus metode pembayaran.' });
+  }
+});
 
 // Untuk SPA fallback: sajikan file index.html jika rute tidak dikenal (khusus mode produksi)
 

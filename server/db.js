@@ -247,6 +247,39 @@ export async function initDatabase() {
       console.log('🌱 Seed Data "achievements" berhasil dimasukkan.');
     }
 
+    // 4.11. Tambah Tabel payment_methods
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS payment_methods (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        account_number VARCHAR(100) DEFAULT NULL,
+        account_holder VARCHAR(100) DEFAULT NULL,
+        type ENUM('TRANSFER', 'CASH', 'EWALLET', 'OTHER') DEFAULT 'TRANSFER',
+        is_active TINYINT(1) DEFAULT 1,
+        instructions TEXT DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('✅ Tabel "payment_methods" siap.');
+
+    // Seed tabel payment_methods jika kosong
+    const [methodsCount] = await pool.query('SELECT COUNT(*) as count FROM payment_methods');
+    if (methodsCount[0].count === 0) {
+      const defaultMethods = [
+        ['Tunai / Cash Langsung', null, null, 'CASH', 1, 'Diserahkan langsung ke kantor sekretariat yayasan atau petugas resmi.'],
+        ['Transfer Manual Konfirmasi WA (Ke BCA)', '1098765432', 'YAYASAN NURUL AITAM', 'TRANSFER', 1, 'Transfer langsung ke rekening Bank BCA Yayasan Nurul Aitam.'],
+        ['Transfer Manual Konfirmasi WA (Ke Mandiri)', '1730098765432', 'YAYASAN NURUL AITAM', 'TRANSFER', 1, 'Transfer langsung ke rekening Bank Mandiri Yayasan Nurul Aitam.'],
+        ['Kotak Amal Keliling', null, null, 'OTHER', 1, 'Penerimaan infak / sedekah dari kotak amal keliling silaturahmi.']
+      ];
+      for (const [name, acc_num, acc_holder, type, is_act, inst] of defaultMethods) {
+        await pool.query(
+          'INSERT INTO payment_methods (name, account_number, account_holder, type, is_active, instructions) VALUES (?, ?, ?, ?, ?, ?)',
+          [name, acc_num, acc_holder, type, is_act, inst]
+        );
+      }
+      console.log('🌱 Seed Data "payment_methods" berhasil dimasukkan.');
+    }
+
     // 5. Cek dan Masukkan Admin Default jika belum ada admin sama sekali
     const [rows] = await pool.query('SELECT COUNT(*) as count FROM admins');
     if (rows[0].count === 0) {

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Phone, Mail, Award, CheckCircle, ArrowRight, ArrowLeft, Upload, Copy, Check } from 'lucide-react';
 
 export default function Donate({ navigateTo }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [copiedBank, setCopiedBank] = useState(null);
+  const [paymentMethods, setPaymentMethods] = useState([]);
   
   // State Form Donasi
   const [formData, setFormData] = useState({
@@ -18,6 +19,17 @@ export default function Donate({ navigateTo }) {
     payment_method: 'BCA',
     message: ''
   });
+
+  useEffect(() => {
+    fetch('/api/payment-methods')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setPaymentMethods(data.filter(m => m.is_active === 1));
+        }
+      })
+      .catch(err => console.error("Gagal memuat metode pembayaran:", err));
+  }, []);
   
   const [receiptFile, setReceiptFile] = useState(null);
   const [receiptPreview, setReceiptPreview] = useState(null);
@@ -356,37 +368,64 @@ export default function Donate({ navigateTo }) {
 
                   {/* Informasi Bank Box */}
                   <div className="bank-account-box">
-                    <div className="bank-row">
-                      <div className="bank-info">
-                        <span className="bank-name">BANK BCA</span>
-                        <span className="bank-number">1098 7654 32</span>
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>a.n. YAYASAN NURUL AITAM</span>
-                      </div>
-                      <button 
-                        onClick={() => copyToClipboard('1098765432', 'BCA')} 
-                        className="btn btn-sm btn-outline"
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px' }}
-                      >
-                        {copiedBank === 'BCA' ? <Check size={14} /> : <Copy size={14} />}
-                        {copiedBank === 'BCA' ? 'Tersalin' : 'Salin Rek'}
-                      </button>
-                    </div>
+                    {paymentMethods.filter(m => m.account_number).length > 0 ? (
+                      paymentMethods.filter(m => m.account_number).map((m) => (
+                        <div className="bank-row" key={m.id} style={{ marginBottom: '12px' }}>
+                          <div className="bank-info">
+                            <span className="bank-name">{m.name.toUpperCase()}</span>
+                            <span className="bank-number">{m.account_number}</span>
+                            {m.account_holder && (
+                              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>a.n. {m.account_holder}</span>
+                            )}
+                            {m.instructions && (
+                              <span style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{m.instructions}</span>
+                            )}
+                          </div>
+                          <button 
+                            onClick={() => copyToClipboard(m.account_number.replace(/\s+/g, ''), m.name)} 
+                            className="btn btn-sm btn-outline"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px' }}
+                          >
+                            {copiedBank === m.name ? <Check size={14} /> : <Copy size={14} />}
+                            {copiedBank === m.name ? 'Tersalin' : 'Salin Rek'}
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        <div className="bank-row">
+                          <div className="bank-info">
+                            <span className="bank-name">BANK BCA</span>
+                            <span className="bank-number">1098 7654 32</span>
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>a.n. YAYASAN NURUL AITAM</span>
+                          </div>
+                          <button 
+                            onClick={() => copyToClipboard('1098765432', 'BCA')} 
+                            className="btn btn-sm btn-outline"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px' }}
+                          >
+                            {copiedBank === 'BCA' ? <Check size={14} /> : <Copy size={14} />}
+                            {copiedBank === 'BCA' ? 'Tersalin' : 'Salin Rek'}
+                          </button>
+                        </div>
 
-                    <div className="bank-row">
-                      <div className="bank-info">
-                        <span className="bank-name">BANK MANDIRI</span>
-                        <span className="bank-number">173 00 9876543 2</span>
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>a.n. YAYASAN NURUL AITAM</span>
-                      </div>
-                      <button 
-                        onClick={() => copyToClipboard('1730098765432', 'MANDIRI')} 
-                        className="btn btn-sm btn-outline"
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px' }}
-                      >
-                        {copiedBank === 'MANDIRI' ? <Check size={14} /> : <Copy size={14} />}
-                        {copiedBank === 'MANDIRI' ? 'Tersalin' : 'Salin Rek'}
-                      </button>
-                    </div>
+                        <div className="bank-row">
+                          <div className="bank-info">
+                            <span className="bank-name">BANK MANDIRI</span>
+                            <span className="bank-number">173 00 9876543 2</span>
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>a.n. YAYASAN NURUL AITAM</span>
+                          </div>
+                          <button 
+                            onClick={() => copyToClipboard('1730098765432', 'MANDIRI')} 
+                            className="btn btn-sm btn-outline"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px' }}
+                          >
+                            {copiedBank === 'MANDIRI' ? <Check size={14} /> : <Copy size={14} />}
+                            {copiedBank === 'MANDIRI' ? 'Tersalin' : 'Salin Rek'}
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Pilihan Metode Bank yang Digunakan */}
