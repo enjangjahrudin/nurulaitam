@@ -296,6 +296,85 @@ app.post('/api/admin/change-password', authenticateToken, async (req, res) => {
   }
 });
 
+// 4c. Ambil Daftar Pengurus (Admin - Butuh Token)
+app.get('/api/admin/admins', authenticateToken, async (req, res) => {
+  try {
+    const rows = await db.query('SELECT id, username, name, created_at FROM admins ORDER BY created_at ASC');
+    res.json(rows);
+  } catch (error) {
+    console.error('Error saat fetch pengurus:', error);
+    res.status(500).json({ message: 'Gagal mengambil daftar pengurus.' });
+  }
+});
+
+// 4d. Tambah Akun Pengurus Baru (Admin - Butuh Token)
+app.post('/api/admin/admins', authenticateToken, async (req, res) => {
+  try {
+    const { username, password, name } = req.body;
+
+    if (!username || !password || !name) {
+      return res.status(400).json({ message: 'Nama lengkap, username, dan password wajib diisi.' });
+    }
+
+    const cleanUsername = username.trim().toLowerCase();
+    if (cleanUsername.length < 3) {
+      return res.status(400).json({ message: 'Username minimal 3 karakter.' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password minimal 6 karakter.' });
+    }
+
+    // Cek duplikasi username
+    const existing = await db.query('SELECT id FROM admins WHERE username = ?', [cleanUsername]);
+    if (existing.length > 0) {
+      return res.status(400).json({ message: 'Username tersebut sudah terdaftar. Gunakan username lain.' });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
+
+    const result = await db.query(
+      'INSERT INTO admins (username, password, name) VALUES (?, ?, ?)',
+      [cleanUsername, hashedPassword, name.trim()]
+    );
+
+    res.json({
+      message: 'Akun pengurus berhasil ditambahkan!',
+      admin: {
+        id: result.insertId,
+        username: cleanUsername,
+        name: name.trim()
+      }
+    });
+  } catch (error) {
+    console.error('Error saat tambah akun pengurus:', error);
+    res.status(500).json({ message: 'Gagal menambahkan akun pengurus.' });
+  }
+});
+
+// 4e. Hapus Akun Pengurus (Admin - Butuh Token)
+app.delete('/api/admin/admins/:id', authenticateToken, async (req, res) => {
+  try {
+    const targetId = parseInt(req.params.id);
+
+    if (targetId === req.admin.id) {
+      return res.status(400).json({ message: 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.' });
+    }
+
+    const countRes = await db.query('SELECT COUNT(*) as count FROM admins');
+    if (countRes[0].count <= 1) {
+      return res.status(400).json({ message: 'Tidak dapat menghapus. Sistem harus memiliki minimal satu akun pengurus.' });
+    }
+
+    await db.query('DELETE FROM admins WHERE id = ?', [targetId]);
+    res.json({ message: 'Akun pengurus berhasil dihapus.' });
+  } catch (error) {
+    console.error('Error saat hapus akun pengurus:', error);
+    res.status(500).json({ message: 'Gagal menghapus akun pengurus.' });
+  }
+});
+
 // 5. Ambil Semua Donasi (Admin - Butuh Token)
 app.get('/api/admin/donations', authenticateToken, async (req, res) => {
   try {

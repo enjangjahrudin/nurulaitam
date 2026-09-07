@@ -58,6 +58,12 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordStatus, setPasswordStatus] = useState({ type: '', message: '' });
 
+  // Admin Management States
+  const [adminsList, setAdminsList] = useState([]);
+  const [newAdminForm, setNewAdminForm] = useState({ name: '', username: '', password: '' });
+  const [adminAddLoading, setAdminAddLoading] = useState(false);
+  const [adminAddStatus, setAdminAddStatus] = useState({ type: '', message: '' });
+
   // Fetch seluruh data donasi untuk admin (termasuk pending & offline)
   const fetchAdminData = async () => {
     setLoading(true);
@@ -107,10 +113,25 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
     }
   };
 
+  const fetchAdmins = async () => {
+    try {
+      const res = await fetch('/api/admin/admins', {
+        headers: { 'Authorization': `Bearer ${adminSession.token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAdminsList(data);
+      }
+    } catch (err) {
+      console.error("Gagal memuat data pengurus:", err);
+    }
+  };
+
   useEffect(() => {
     if (adminSession?.token) {
       fetchAdminData();
       fetchCMSData();
+      fetchAdmins();
     }
   }, [adminSession]);
 
@@ -298,6 +319,64 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
       setPasswordStatus({ type: 'error', message: err.message });
     } finally {
       setPasswordLoading(false);
+    }
+  };
+
+  // 1c. Kelola Pengurus
+  const handleAddAdmin = async (e) => {
+    e.preventDefault();
+    setAdminAddStatus({ type: '', message: '' });
+
+    if (!newAdminForm.name || !newAdminForm.username || !newAdminForm.password) {
+      setAdminAddStatus({ type: 'error', message: 'Semua kolom wajib diisi.' });
+      return;
+    }
+
+    if (newAdminForm.password.length < 6) {
+      setAdminAddStatus({ type: 'error', message: 'Password minimal 6 karakter.' });
+      return;
+    }
+
+    setAdminAddLoading(true);
+    try {
+      const res = await fetch('/api/admin/admins', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminSession.token}`
+        },
+        body: JSON.stringify(newAdminForm)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Gagal menambahkan akun pengurus.');
+
+      setAdminAddStatus({ type: 'success', message: 'Akun pengurus berhasil ditambahkan!' });
+      setNewAdminForm({ name: '', username: '', password: '' });
+      fetchAdmins();
+    } catch (err) {
+      setAdminAddStatus({ type: 'error', message: err.message });
+    } finally {
+      setAdminAddLoading(false);
+    }
+  };
+
+  const handleDeleteAdmin = async (id, username) => {
+    if (!window.confirm(`Yakin ingin menghapus akun pengurus "${username}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/admin/admins/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${adminSession.token}`
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Gagal menghapus pengurus.');
+
+      alert('Akun pengurus berhasil dihapus.');
+      fetchAdmins();
+    } catch (err) {
+      alert(err.message);
     }
   };
 
@@ -710,6 +789,14 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
             </li>
             <li>
               <button 
+                onClick={() => setActiveTab('admins')} 
+                className={`sidebar-btn ${activeTab === 'admins' ? 'active' : ''}`}
+              >
+                <Users size={18} /> Kelola Pengurus
+              </button>
+            </li>
+            <li>
+              <button 
                 onClick={() => setActiveTab('settings')} 
                 className={`sidebar-btn ${activeTab === 'settings' ? 'active' : ''}`}
               >
@@ -748,6 +835,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
             {activeTab === 'articles' && 'Kelola Kabar & Artikel Dakwah'}
             {activeTab === 'gallery' && 'Kelola Galeri Foto Dokumentasi'}
             {activeTab === 'programs' && 'Kelola Program Asuhan & Prestasi Resmi'}
+            {activeTab === 'admins' && 'Kelola Akun Pengurus Yayasan'}
             {activeTab === 'settings' && 'Pengaturan Informasi & Profil Yayasan'}
           </h1>
           <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
@@ -1591,6 +1679,170 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
               </div>
             </div>
 
+          </div>
+        )}
+
+        {/* TAB: MANAGE ADMINS */}
+        {activeTab === 'admins' && (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px', alignItems: 'start' }}>
+              
+              {/* Form Tambah Pengurus */}
+              <div className="donate-card">
+                <div className="donate-form-body">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                    <Users size={22} style={{ color: 'var(--color-emerald-800)' }} />
+                    <h3 className="serif-title" style={{ fontSize: '18px', color: 'var(--color-emerald-950)', margin: 0 }}>Tambah Pengurus Baru</h3>
+                  </div>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>
+                    Buat akun staf/pengurus baru agar dapat mengakses dashboard admin yayasan.
+                  </p>
+
+                  {adminAddStatus.message && (
+                    <div style={{
+                      padding: '10px 14px',
+                      borderRadius: 'var(--radius-sm)',
+                      marginBottom: '16px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      background: adminAddStatus.type === 'success' ? '#e8f5e9' : '#ffebee',
+                      color: adminAddStatus.type === 'success' ? '#2e7d32' : '#c62828',
+                      border: `1px solid ${adminAddStatus.type === 'success' ? '#a5d6a7' : '#ef9a9a'}`
+                    }}>
+                      {adminAddStatus.type === 'success' ? '✅ ' : '⚠️ '}
+                      {adminAddStatus.message}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleAddAdmin}>
+                    <div className="form-group">
+                      <label>Nama Lengkap Pengurus *</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Contoh: Ust. Ahmad Fauzi"
+                        value={newAdminForm.name}
+                        onChange={(e) => setNewAdminForm(prev => ({ ...prev, name: e.target.value }))}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Username Login * (Huruf kecil & angka)</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Contoh: ahmad_fauzi"
+                        value={newAdminForm.username}
+                        onChange={(e) => setNewAdminForm(prev => ({ ...prev, username: e.target.value }))}
+                        required
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Password Akun * (Minimal 6 karakter)</label>
+                      <input
+                        type="password"
+                        className="form-input"
+                        placeholder="Buat password akun baru"
+                        value={newAdminForm.password}
+                        onChange={(e) => setNewAdminForm(prev => ({ ...prev, password: e.target.value }))}
+                        required
+                      />
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      className="btn btn-primary" 
+                      style={{ width: '100%', padding: '12px', marginTop: '8px' }}
+                      disabled={adminAddLoading}
+                    >
+                      {adminAddLoading ? 'Menyimpan Akun...' : 'Tambah Akun Pengurus'}
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {/* Tabel Daftar Pengurus */}
+              <div className="ledger-box">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <div>
+                    <h3 className="serif-title" style={{ fontSize: '18px', color: 'var(--color-emerald-950)', margin: 0 }}>
+                      Daftar Akun Pengurus Aktif ({adminsList.length})
+                    </h3>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
+                      Seluruh akun yang memiliki hak akses ke sistem yayasan.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Nama Pengurus</th>
+                        <th>Username</th>
+                        <th>Tanggal Terdaftar</th>
+                        <th style={{ textAlign: 'center' }}>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {adminsList.map((adm) => {
+                        const isSelf = adm.username === adminSession?.username;
+                        return (
+                          <tr key={adm.id}>
+                            <td>
+                              <div style={{ fontWeight: 700, color: 'var(--color-emerald-950)' }}>
+                                {adm.name}
+                              </div>
+                              {isSelf && (
+                                <span style={{ fontSize: '11px', background: 'var(--color-emerald-100)', color: 'var(--color-emerald-800)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                                  Akun Anda (Sesi Aktif)
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              <span style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--color-emerald-700)' }}>
+                                @{adm.username}
+                              </span>
+                            </td>
+                            <td>
+                              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                                {formatDate(adm.created_at)}
+                              </span>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              {isSelf ? (
+                                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                  Sedang Digunakan
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleDeleteAdmin(adm.id, adm.username)}
+                                  className="btn btn-sm btn-outline"
+                                  style={{ borderColor: '#c62828', color: '#c62828', padding: '4px 10px', fontSize: '12px' }}
+                                  title="Hapus akun pengurus ini"
+                                >
+                                  Hapus
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {adminsList.length === 0 && (
+                        <tr>
+                          <td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
+                            Memuat daftar pengurus...
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
           </div>
         )}
 
