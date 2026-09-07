@@ -154,6 +154,18 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
     });
   };
 
+  const formatCompactDate = (isoStr) => {
+    if (!isoStr) return '-';
+    const d = new Date(isoStr);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const date = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${date} ${month} ${year}, ${hours}:${minutes}`;
+  };
+
   // 1. Verifikasi (Setujui / Tolak) Donasi Online
   const handleVerifyDonation = async (id, status) => {
     if (!window.confirm(`Apakah Anda yakin ingin ${status === 'APPROVED' ? 'MENYETUJUI' : 'MENOLAK'} donasi ini?`)) {
@@ -1685,93 +1697,100 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
         {/* TAB: MANAGE ADMINS */}
         {activeTab === 'admins' && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '30px', alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 380px) 1fr', gap: '28px', alignItems: 'start' }}>
               
               {/* Form Tambah Pengurus */}
-              <div className="donate-card">
-                <div className="donate-form-body">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                    <Users size={22} style={{ color: 'var(--color-emerald-800)' }} />
-                    <h3 className="serif-title" style={{ fontSize: '18px', color: 'var(--color-emerald-950)', margin: 0 }}>Tambah Pengurus Baru</h3>
+              <div className="donate-card" style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669', flexShrink: 0 }}>
+                    <Users size={20} />
                   </div>
-                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>
-                    Buat akun staf/pengurus baru agar dapat mengakses dashboard admin yayasan.
-                  </p>
-
-                  {adminAddStatus.message && (
-                    <div style={{
-                      padding: '10px 14px',
-                      borderRadius: 'var(--radius-sm)',
-                      marginBottom: '16px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      background: adminAddStatus.type === 'success' ? '#e8f5e9' : '#ffebee',
-                      color: adminAddStatus.type === 'success' ? '#2e7d32' : '#c62828',
-                      border: `1px solid ${adminAddStatus.type === 'success' ? '#a5d6a7' : '#ef9a9a'}`
-                    }}>
-                      {adminAddStatus.type === 'success' ? '✅ ' : '⚠️ '}
-                      {adminAddStatus.message}
-                    </div>
-                  )}
-
-                  <form onSubmit={handleAddAdmin}>
-                    <div className="form-group">
-                      <label>Nama Lengkap Pengurus *</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="Contoh: Ust. Ahmad Fauzi"
-                        value={newAdminForm.name}
-                        onChange={(e) => setNewAdminForm(prev => ({ ...prev, name: e.target.value }))}
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Username Login * (Huruf kecil & angka)</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="Contoh: ahmad_fauzi"
-                        value={newAdminForm.username}
-                        onChange={(e) => setNewAdminForm(prev => ({ ...prev, username: e.target.value }))}
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Password Akun * (Minimal 6 karakter)</label>
-                      <input
-                        type="password"
-                        className="form-input"
-                        placeholder="Buat password akun baru"
-                        value={newAdminForm.password}
-                        onChange={(e) => setNewAdminForm(prev => ({ ...prev, password: e.target.value }))}
-                        required
-                      />
-                    </div>
-
-                    <button 
-                      type="submit" 
-                      className="btn btn-primary" 
-                      style={{ width: '100%', padding: '12px', marginTop: '8px' }}
-                      disabled={adminAddLoading}
-                    >
-                      {adminAddLoading ? 'Menyimpan Akun...' : 'Tambah Akun Pengurus'}
-                    </button>
-                  </form>
+                  <div>
+                    <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0f172a', margin: 0 }}>Tambah Pengurus Baru</h3>
+                    <p style={{ fontSize: '13px', color: '#64748b', margin: '2px 0 0 0' }}>Buat akun baru untuk akses admin.</p>
+                  </div>
                 </div>
+
+                <div style={{ height: '1px', background: '#f1f5f9', margin: '16px 0 20px 0' }}></div>
+
+                {adminAddStatus.message && (
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    fontSize: '13px',
+                    fontWeight: 500,
+                    background: adminAddStatus.type === 'success' ? '#f0fdf4' : '#fef2f2',
+                    color: adminAddStatus.type === 'success' ? '#166534' : '#991b1b',
+                    border: `1px solid ${adminAddStatus.type === 'success' ? '#bbf7d0' : '#fecaca'}`
+                  }}>
+                    {adminAddStatus.type === 'success' ? '✅ ' : '⚠️ '}
+                    {adminAddStatus.message}
+                  </div>
+                )}
+
+                <form onSubmit={handleAddAdmin}>
+                  <div className="form-group">
+                    <label>Nama Lengkap Pengurus *</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Contoh: Ust. Ahmad Fauzi"
+                      value={newAdminForm.name}
+                      onChange={(e) => setNewAdminForm(prev => ({ ...prev, name: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Username Login * (Huruf kecil & angka)</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      placeholder="Contoh: ahmad_fauzi"
+                      value={newAdminForm.username}
+                      onChange={(e) => setNewAdminForm(prev => ({ ...prev, username: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '24px' }}>
+                    <label>Password Akun * (Minimal 6 karakter)</label>
+                    <input
+                      type="password"
+                      className="form-input"
+                      placeholder="Buat password akun baru"
+                      value={newAdminForm.password}
+                      onChange={(e) => setNewAdminForm(prev => ({ ...prev, password: e.target.value }))}
+                      required
+                    />
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary" 
+                    style={{ width: '100%', padding: '11px', borderRadius: '8px', fontWeight: 600, fontSize: '14px' }}
+                    disabled={adminAddLoading}
+                  >
+                    {adminAddLoading ? 'Menyimpan Akun...' : '+ Tambah Akun Pengurus'}
+                  </button>
+                </form>
               </div>
 
               {/* Tabel Daftar Pengurus */}
-              <div className="ledger-box">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div className="ledger-box" style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
                   <div>
-                    <h3 className="serif-title" style={{ fontSize: '18px', color: 'var(--color-emerald-950)', margin: 0 }}>
-                      Daftar Akun Pengurus Aktif ({adminsList.length})
-                    </h3>
-                    <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-                      Seluruh akun yang memiliki hak akses ke sistem yayasan.
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                        Daftar Akun Pengurus Aktif
+                      </h3>
+                      <span style={{ fontSize: '12px', fontWeight: 700, background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '9999px' }}>
+                        {adminsList.length}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '13px', color: '#64748b', margin: '3px 0 0 0' }}>
+                      Seluruh akun yang memiliki akses ke panel admin yayasan.
                     </p>
                   </div>
                 </div>
@@ -1782,8 +1801,8 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                       <tr>
                         <th>Nama Pengurus</th>
                         <th>Username</th>
-                        <th>Tanggal Terdaftar</th>
-                        <th style={{ textAlign: 'center' }}>Aksi</th>
+                        <th style={{ whiteSpace: 'nowrap' }}>Tanggal Terdaftar</th>
+                        <th style={{ textAlign: 'center', width: '100px' }}>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1792,35 +1811,46 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                         return (
                           <tr key={adm.id}>
                             <td>
-                              <div style={{ fontWeight: 700, color: 'var(--color-emerald-950)' }}>
+                              <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '14px' }}>
                                 {adm.name}
                               </div>
                               {isSelf && (
-                                <span style={{ fontSize: '11px', background: 'var(--color-emerald-100)', color: 'var(--color-emerald-800)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                                <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: 600, background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '1px 8px', borderRadius: '9999px', marginTop: '3px' }}>
                                   Akun Anda (Sesi Aktif)
                                 </span>
                               )}
                             </td>
                             <td>
-                              <span style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--color-emerald-700)' }}>
+                              <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', fontSize: '12.5px', color: '#047857', background: '#f0fdf4', padding: '3px 8px', borderRadius: '6px', border: '1px solid #dcfce7', fontWeight: 500 }}>
                                 @{adm.username}
                               </span>
                             </td>
                             <td>
-                              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                                {formatDate(adm.created_at)}
+                              <span style={{ fontSize: '13px', color: '#64748b', whiteSpace: 'nowrap' }}>
+                                {formatCompactDate(adm.created_at)}
                               </span>
                             </td>
                             <td style={{ textAlign: 'center' }}>
                               {isSelf ? (
-                                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                                  Sedang Digunakan
+                                <span style={{ fontSize: '12px', color: '#94a3b8', background: '#f8fafc', padding: '4px 10px', borderRadius: '6px', fontWeight: 500, whiteSpace: 'nowrap', border: '1px solid #e2e8f0' }}>
+                                  Aktif
                                 </span>
                               ) : (
                                 <button
                                   onClick={() => handleDeleteAdmin(adm.id, adm.username)}
-                                  className="btn btn-sm btn-outline"
-                                  style={{ borderColor: '#c62828', color: '#c62828', padding: '4px 10px', fontSize: '12px' }}
+                                  style={{
+                                    background: '#ffffff',
+                                    color: '#ef4444',
+                                    border: '1px solid #fecaca',
+                                    padding: '4px 12px',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    transition: 'all 0.15s ease-in-out'
+                                  }}
+                                  onMouseOver={(e) => { e.currentTarget.style.background = '#fef2f2'; }}
+                                  onMouseOut={(e) => { e.currentTarget.style.background = '#ffffff'; }}
                                   title="Hapus akun pengurus ini"
                                 >
                                   Hapus
