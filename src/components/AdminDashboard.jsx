@@ -1,9 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, DollarSign, Users, Award, FileText, CheckCircle, XCircle, PlusCircle, Search, Download, LogOut, Upload, User, Phone, Mail, Image as ImageIcon, Printer, Lock } from 'lucide-react';
+import { Layout, DollarSign, Users, Award, FileText, CheckCircle, XCircle, PlusCircle, Search, Download, LogOut, Upload, User, Phone, Mail, Image as ImageIcon, Printer, Lock, Menu, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import ReceiptPDF from './ReceiptPDF';
 
 export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    return localStorage.getItem('admin_sidebar_collapsed') === 'true';
+  });
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('admin_sidebar_collapsed', String(next));
+      return next;
+    });
+  };
+
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -716,16 +728,26 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
 
   return (
     <div className="admin-layout">
-      {/* SIDEBAR NAV */}
-      <aside className="admin-sidebar">
+      {/* SIDEBAR NAV (Collapsible) */}
+      <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
-          <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent' }}>
-            <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          <div className="sidebar-brand-group">
+            <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent' }}>
+              <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+            <div className="sidebar-title">
+              Nurul Aitam
+              <span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--color-gold-400)' }}>DASHBOARD CONTROL</span>
+            </div>
           </div>
-          <div className="sidebar-title serif-title">
-            Nurul Aitam
-            <span style={{ display: 'block', fontSize: '9px', fontWeight: 500, fontFamily: 'sans-serif', color: 'var(--color-gold-400)' }}>DASHBOARD CONTROL</span>
-          </div>
+          <button 
+            type="button"
+            onClick={toggleSidebar} 
+            className="sidebar-collapse-toggle sidebar-collapse-toggle-desktop"
+            title={sidebarCollapsed ? "Buka Sidebar Penuh" : "Sembunyikan Sidebar (Sisakan Icon)"}
+          >
+            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
 
         <div className="sidebar-user">
@@ -739,23 +761,29 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
               <button 
                 onClick={() => setActiveTab('dashboard')} 
                 className={`sidebar-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
+                title="Ringkasan Analitik"
               >
-                <Layout size={18} /> Ringkasan Analitik
+                <Layout size={18} />
+                <span className="sidebar-btn-text">Ringkasan Analitik</span>
               </button>
             </li>
             <li>
               <button 
                 onClick={() => setActiveTab('pending')} 
                 className={`sidebar-btn ${activeTab === 'pending' ? 'active' : ''}`}
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}
+                title="Antrean Verifikasi"
               >
-                <span style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <CheckCircle size={18} /> Antrean Verifikasi
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                  <CheckCircle size={18} />
+                  <span className="sidebar-btn-text">Antrean Verifikasi</span>
+                </div>
                 {pendingDonations.length > 0 && (
-                  <span style={{ background: 'var(--color-gold-500)', color: 'var(--color-emerald-950)', fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '10px' }}>
-                    {pendingDonations.length}
-                  </span>
+                  <>
+                    <span className="sidebar-badge-count">
+                      {pendingDonations.length}
+                    </span>
+                    <span className="sidebar-pending-dot" title={`${pendingDonations.length} verifikasi pending`} />
+                  </>
                 )}
               </button>
             </li>
@@ -763,74 +791,92 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
               <button 
                 onClick={() => setActiveTab('offline')} 
                 className={`sidebar-btn ${activeTab === 'offline' ? 'active' : ''}`}
+                title="Input Donasi Offline"
               >
-                <PlusCircle size={18} /> Input Donasi Offline
+                <PlusCircle size={18} />
+                <span className="sidebar-btn-text">Input Donasi Offline</span>
               </button>
             </li>
             <li>
               <button 
                 onClick={() => setActiveTab('ledger')} 
                 className={`sidebar-btn ${activeTab === 'ledger' ? 'active' : ''}`}
+                title="Buku Kas Ledger"
               >
-                <FileText size={18} /> Buku Kas Ledger
+                <FileText size={18} />
+                <span className="sidebar-btn-text">Buku Kas Ledger</span>
               </button>
             </li>
             <li>
               <button 
                 onClick={() => setActiveTab('articles')} 
                 className={`sidebar-btn ${activeTab === 'articles' ? 'active' : ''}`}
+                title="Kelola Artikel"
               >
-                <FileText size={18} /> Kelola Artikel
+                <FileText size={18} />
+                <span className="sidebar-btn-text">Kelola Artikel</span>
               </button>
             </li>
             <li>
               <button 
                 onClick={() => setActiveTab('gallery')} 
                 className={`sidebar-btn ${activeTab === 'gallery' ? 'active' : ''}`}
+                title="Kelola Galeri"
               >
-                <ImageIcon size={18} /> Kelola Galeri
+                <ImageIcon size={18} />
+                <span className="sidebar-btn-text">Kelola Galeri</span>
               </button>
             </li>
             <li>
               <button 
                 onClick={() => setActiveTab('programs')} 
                 className={`sidebar-btn ${activeTab === 'programs' ? 'active' : ''}`}
+                title="Kelola Program & Prestasi"
               >
-                <Award size={18} /> Kelola Program & Prestasi
+                <Award size={18} />
+                <span className="sidebar-btn-text">Kelola Program & Prestasi</span>
               </button>
             </li>
             <li>
               <button 
                 onClick={() => setActiveTab('admins')} 
                 className={`sidebar-btn ${activeTab === 'admins' ? 'active' : ''}`}
+                title="Kelola Pengurus"
               >
-                <Users size={18} /> Kelola Pengurus
+                <Users size={18} />
+                <span className="sidebar-btn-text">Kelola Pengurus</span>
               </button>
             </li>
             <li>
               <button 
                 onClick={() => setActiveTab('settings')} 
                 className={`sidebar-btn ${activeTab === 'settings' ? 'active' : ''}`}
+                title="Pengaturan Yayasan"
               >
-                <Layout size={18} /> Pengaturan Yayasan
+                <Layout size={18} />
+                <span className="sidebar-btn-text">Pengaturan Yayasan</span>
               </button>
             </li>
           </ul>
         </nav>
 
-        <div style={{ marginTop: 'auto' }}>
+        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <button 
             onClick={() => navigateTo('home')} 
             className="sidebar-btn" 
-            style={{ marginBottom: '8px', color: 'rgba(255,255,255,0.5)' }}
+            style={{ color: 'rgba(255,255,255,0.6)' }}
+            title="Kembali ke Website Utama"
           >
-            ← Kembali ke Website
+            <ArrowLeft size={18} />
+            <span className="sidebar-btn-text">Kembali ke Website</span>
           </button>
           <button 
             onClick={onLogout} 
             className="sidebar-btn sidebar-btn-logout"
+            title="Keluar (Logout)"
           >
-            <LogOut size={18} /> Keluar (Logout)
+            <LogOut size={18} />
+            <span className="sidebar-btn-text">Keluar (Logout)</span>
           </button>
         </div>
       </aside>
@@ -839,19 +885,30 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
       <main className="admin-main">
         {/* HEADER BAR */}
         <header className="admin-page-header">
-          <h1 className="admin-page-title serif-title">
-            {activeTab === 'dashboard' && 'Panel Analitik Keuangan'}
-            {activeTab === 'pending' && `Verifikasi Bukti Transfer (${pendingDonations.length})`}
-            {activeTab === 'offline' && 'Catat Penerimaan Donasi Manual'}
-            {activeTab === 'ledger' && 'Buku Besar Laporan Donasi'}
-            {activeTab === 'articles' && 'Kelola Kabar & Artikel Dakwah'}
-            {activeTab === 'gallery' && 'Kelola Galeri Foto Dokumentasi'}
-            {activeTab === 'programs' && 'Kelola Program Asuhan & Prestasi Resmi'}
-            {activeTab === 'admins' && 'Kelola Akun Pengurus Yayasan'}
-            {activeTab === 'settings' && 'Pengaturan Informasi & Profil Yayasan'}
-          </h1>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Status Server: <span style={{ color: 'var(--color-emerald-700)', fontWeight: 700 }}>● Connected MySQL</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
+            <button 
+              type="button"
+              onClick={toggleSidebar} 
+              className="sidebar-toggle-btn"
+              title={sidebarCollapsed ? "Buka Menu Sidebar Penuh" : "Sembunyikan Sidebar (Sisakan Icon)"}
+              aria-label="Toggle Sidebar"
+            >
+              {sidebarCollapsed ? <Menu size={19} /> : <ChevronLeft size={19} />}
+            </button>
+            <h1 className="admin-page-title" style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {activeTab === 'dashboard' && 'Panel Analitik Keuangan'}
+              {activeTab === 'pending' && `Verifikasi Bukti Transfer (${pendingDonations.length})`}
+              {activeTab === 'offline' && 'Catat Penerimaan Donasi Manual'}
+              {activeTab === 'ledger' && 'Buku Besar Laporan Donasi'}
+              {activeTab === 'articles' && 'Kelola Kabar & Artikel Dakwah'}
+              {activeTab === 'gallery' && 'Kelola Galeri Foto Dokumentasi'}
+              {activeTab === 'programs' && 'Kelola Program Asuhan & Prestasi Resmi'}
+              {activeTab === 'admins' && 'Kelola Akun Pengurus Yayasan'}
+              {activeTab === 'settings' && 'Pengaturan Informasi & Profil Yayasan'}
+            </h1>
+          </div>
+          <div style={{ fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            Status Server: <span style={{ color: '#059669', fontWeight: 700 }}>● Connected MySQL</span>
           </div>
         </header>
 
