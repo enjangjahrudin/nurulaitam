@@ -16,6 +16,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
     });
   };
 
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -727,35 +728,77 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
   });
 
   return (
-    <div className="admin-layout">
-      {/* SIDEBAR NAV (Collapsible) */}
-      <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <div className="sidebar-header">
-          <div className="sidebar-brand-group">
-            <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent' }}>
-              <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-            </div>
-            <div className="sidebar-title">
-              Nurul Aitam
-              <span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: 'var(--color-gold-400)' }}>DASHBOARD CONTROL</span>
-            </div>
-          </div>
+    <div className="admin-shell">
+      {/* TOP NAVIGATION BAR (Header Gelap ala CekDesilMassal) */}
+      <header className="admin-topbar">
+        <div className="admin-topbar-left">
           <button 
-            type="button"
+            type="button" 
             onClick={toggleSidebar} 
-            className="sidebar-collapse-toggle sidebar-collapse-toggle-desktop"
+            className="admin-topbar-toggle"
             title={sidebarCollapsed ? "Buka Sidebar Penuh" : "Sembunyikan Sidebar (Sisakan Icon)"}
           >
-            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            <Menu size={18} />
+          </button>
+
+          <div className="admin-topbar-brand">
+            <div className="admin-topbar-logo">
+              <img src="/logo.png" alt="Logo Nurul Aitam" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="admin-topbar-title">Panel Admin Nurul Aitam</span>
+                <span className="admin-topbar-badge">Admin Area</span>
+              </div>
+              <p className="admin-topbar-subtitle">Yayasan Yatim Piatu Nurul Aitam Karawang</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="admin-topbar-right">
+          <div className="topbar-server-badge">
+            <span style={{ color: '#10b981', fontSize: '12px' }}>●</span>
+            <span>MySQL Connected</span>
+          </div>
+
+          <button 
+            type="button"
+            onClick={() => setShowPasswordModal(true)} 
+            className="topbar-btn topbar-btn-secondary"
+            title="Ubah kata sandi akun admin pengurus"
+          >
+            <Lock size={13} style={{ color: '#f59e0b' }} />
+            <span>Ganti Sandi</span>
+          </button>
+
+          <button 
+            type="button"
+            onClick={() => navigateTo('home')} 
+            className="topbar-btn topbar-btn-primary"
+            title="Buka Website Portal Nurul Aitam"
+          >
+            <ArrowLeft size={13} />
+            <span>Lihat Website</span>
+          </button>
+
+          <button 
+            type="button"
+            onClick={onLogout} 
+            className="topbar-btn topbar-btn-logout"
+            title="Keluar dari sesi admin"
+          >
+            <LogOut size={13} />
+            <span>Keluar</span>
           </button>
         </div>
+      </header>
 
-        <div className="sidebar-user">
-          <div className="user-welcome">Sesi Aktif</div>
-          <div className="user-name">{adminSession?.name || 'Admin Pengurus'}</div>
-        </div>
-
-        <nav style={{ flexGrow: 1 }}>
+      {/* BODY WRAPPER (SIDEBAR + MAIN CONTENT AREA) */}
+      <div className="admin-body">
+        {/* COLLAPSIBLE SIDEBAR */}
+        <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+          {/* Menu Bagian 1: TRANSAKSI */}
+          <div className="sidebar-section-title">Keuangan & Donasi</div>
           <ul className="sidebar-menu">
             <li>
               <button 
@@ -763,7 +806,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                 className={`sidebar-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
                 title="Ringkasan Analitik"
               >
-                <Layout size={18} />
+                <Layout size={17} />
                 <span className="sidebar-btn-text">Ringkasan Analitik</span>
               </button>
             </li>
@@ -773,16 +816,12 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                 className={`sidebar-btn ${activeTab === 'pending' ? 'active' : ''}`}
                 title="Antrean Verifikasi"
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                  <CheckCircle size={18} />
-                  <span className="sidebar-btn-text">Antrean Verifikasi</span>
-                </div>
+                <CheckCircle size={17} />
+                <span className="sidebar-btn-text">Verifikasi Transfer</span>
                 {pendingDonations.length > 0 && (
                   <>
-                    <span className="sidebar-badge-count">
-                      {pendingDonations.length}
-                    </span>
-                    <span className="sidebar-pending-dot" title={`${pendingDonations.length} verifikasi pending`} />
+                    <span className="sidebar-badge-count">{pendingDonations.length}</span>
+                    <span className="sidebar-pending-dot" title={`${pendingDonations.length} pending`} />
                   </>
                 )}
               </button>
@@ -793,8 +832,8 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                 className={`sidebar-btn ${activeTab === 'offline' ? 'active' : ''}`}
                 title="Input Donasi Offline"
               >
-                <PlusCircle size={18} />
-                <span className="sidebar-btn-text">Input Donasi Offline</span>
+                <PlusCircle size={17} />
+                <span className="sidebar-btn-text">Donasi Offline</span>
               </button>
             </li>
             <li>
@@ -803,17 +842,22 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                 className={`sidebar-btn ${activeTab === 'ledger' ? 'active' : ''}`}
                 title="Buku Kas Ledger"
               >
-                <FileText size={18} />
+                <FileText size={17} />
                 <span className="sidebar-btn-text">Buku Kas Ledger</span>
               </button>
             </li>
+          </ul>
+
+          {/* Menu Bagian 2: CMS & KONTEN */}
+          <div className="sidebar-section-title">Konten & Dakwah</div>
+          <ul className="sidebar-menu">
             <li>
               <button 
                 onClick={() => setActiveTab('articles')} 
                 className={`sidebar-btn ${activeTab === 'articles' ? 'active' : ''}`}
                 title="Kelola Artikel"
               >
-                <FileText size={18} />
+                <FileText size={17} />
                 <span className="sidebar-btn-text">Kelola Artikel</span>
               </button>
             </li>
@@ -823,7 +867,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                 className={`sidebar-btn ${activeTab === 'gallery' ? 'active' : ''}`}
                 title="Kelola Galeri"
               >
-                <ImageIcon size={18} />
+                <ImageIcon size={17} />
                 <span className="sidebar-btn-text">Kelola Galeri</span>
               </button>
             </li>
@@ -833,17 +877,22 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                 className={`sidebar-btn ${activeTab === 'programs' ? 'active' : ''}`}
                 title="Kelola Program & Prestasi"
               >
-                <Award size={18} />
-                <span className="sidebar-btn-text">Kelola Program & Prestasi</span>
+                <Award size={17} />
+                <span className="sidebar-btn-text">Program & Prestasi</span>
               </button>
             </li>
+          </ul>
+
+          {/* Menu Bagian 3: SISTEM & PENGATURAN */}
+          <div className="sidebar-section-title">Sistem Yayasan</div>
+          <ul className="sidebar-menu">
             <li>
               <button 
                 onClick={() => setActiveTab('admins')} 
                 className={`sidebar-btn ${activeTab === 'admins' ? 'active' : ''}`}
                 title="Kelola Pengurus"
               >
-                <Users size={18} />
+                <Users size={17} />
                 <span className="sidebar-btn-text">Kelola Pengurus</span>
               </button>
             </li>
@@ -853,64 +902,62 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                 className={`sidebar-btn ${activeTab === 'settings' ? 'active' : ''}`}
                 title="Pengaturan Yayasan"
               >
-                <Layout size={18} />
-                <span className="sidebar-btn-text">Pengaturan Yayasan</span>
+                <Layout size={17} />
+                <span className="sidebar-btn-text">Pengaturan Profil</span>
               </button>
             </li>
           </ul>
-        </nav>
 
-        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <button 
-            onClick={() => navigateTo('home')} 
-            className="sidebar-btn" 
-            style={{ color: 'rgba(255,255,255,0.6)' }}
-            title="Kembali ke Website Utama"
-          >
-            <ArrowLeft size={18} />
-            <span className="sidebar-btn-text">Kembali ke Website</span>
-          </button>
-          <button 
-            onClick={onLogout} 
-            className="sidebar-btn sidebar-btn-logout"
-            title="Keluar (Logout)"
-          >
-            <LogOut size={18} />
-            <span className="sidebar-btn-text">Keluar (Logout)</span>
-          </button>
-        </div>
-      </aside>
+          {/* Sesi Pengguna di Bawah Sidebar */}
+          <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #1e293b' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: sidebarCollapsed ? '4px 0' : '4px 6px', justifyContent: sidebarCollapsed ? 'center' : 'flex-start' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#059669', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, flexShrink: 0 }}>
+                {adminSession?.name ? adminSession.name.charAt(0).toUpperCase() : 'A'}
+              </div>
+              {!sidebarCollapsed && (
+                <div style={{ minWidth: 0, overflow: 'hidden' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#f1f5f9', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                    {adminSession?.name || 'Admin'}
+                  </div>
+                  <div style={{ fontSize: '10.5px', color: '#64748b' }}>
+                    @{adminSession?.username || 'admin'}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </aside>
 
-      {/* MAIN CONTENT AREA */}
-      <main className="admin-main">
-        {/* HEADER BAR */}
-        <header className="admin-page-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
-            <button 
-              type="button"
-              onClick={toggleSidebar} 
-              className="sidebar-toggle-btn"
-              title={sidebarCollapsed ? "Buka Menu Sidebar Penuh" : "Sembunyikan Sidebar (Sisakan Icon)"}
-              aria-label="Toggle Sidebar"
-            >
-              {sidebarCollapsed ? <Menu size={19} /> : <ChevronLeft size={19} />}
-            </button>
-            <h1 className="admin-page-title" style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {activeTab === 'dashboard' && 'Panel Analitik Keuangan'}
-              {activeTab === 'pending' && `Verifikasi Bukti Transfer (${pendingDonations.length})`}
-              {activeTab === 'offline' && 'Catat Penerimaan Donasi Manual'}
-              {activeTab === 'ledger' && 'Buku Besar Laporan Donasi'}
-              {activeTab === 'articles' && 'Kelola Kabar & Artikel Dakwah'}
-              {activeTab === 'gallery' && 'Kelola Galeri Foto Dokumentasi'}
-              {activeTab === 'programs' && 'Kelola Program Asuhan & Prestasi Resmi'}
-              {activeTab === 'admins' && 'Kelola Akun Pengurus Yayasan'}
-              {activeTab === 'settings' && 'Pengaturan Informasi & Profil Yayasan'}
-            </h1>
-          </div>
-          <div style={{ fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            Status Server: <span style={{ color: '#059669', fontWeight: 700 }}>● Connected MySQL</span>
-          </div>
-        </header>
+        {/* MAIN CONTENT AREA */}
+        <main className="admin-content-area">
+          <div className="admin-content-inner">
+            {/* Header Judul Halaman */}
+            <header className="admin-page-header">
+              <div>
+                <h1 className="admin-page-title">
+                  {activeTab === 'dashboard' && 'Panel Analitik Keuangan'}
+                  {activeTab === 'pending' && `Verifikasi Bukti Transfer (${pendingDonations.length})`}
+                  {activeTab === 'offline' && 'Catat Penerimaan Donasi Manual'}
+                  {activeTab === 'ledger' && 'Buku Besar Laporan Donasi'}
+                  {activeTab === 'articles' && 'Kelola Kabar & Artikel Dakwah'}
+                  {activeTab === 'gallery' && 'Kelola Galeri Foto Dokumentasi'}
+                  {activeTab === 'programs' && 'Kelola Program Asuhan & Prestasi'}
+                  {activeTab === 'admins' && 'Kelola Akun Pengurus Yayasan'}
+                  {activeTab === 'settings' && 'Pengaturan Informasi & Profil Yayasan'}
+                </h1>
+                <p className="admin-page-desc">
+                  {activeTab === 'dashboard' && 'Ringkasan performa penggalangan dana dan transparansi keuangan'}
+                  {activeTab === 'pending' && 'Tinjau bukti transfer rekening bank yang dikirimkan donatur'}
+                  {activeTab === 'offline' && 'Input manual donasi langsung, kotak amal, atau jemput zakat'}
+                  {activeTab === 'ledger' && 'Daftar riwayat seluruh donasi masuk yang telah terverifikasi'}
+                  {activeTab === 'articles' && 'Publikasi artikel, berita, dan kabar kegiatan santri yayasan'}
+                  {activeTab === 'gallery' && 'Unggah dokumentasi foto kegiatan sosial dan santri'}
+                  {activeTab === 'programs' && 'Atur program santunan dan dokumentasi prestasi anak asuh'}
+                  {activeTab === 'admins' && 'Manajemen akun pengurus yang memiliki hak akses dashboard'}
+                  {activeTab === 'settings' && 'Konfigurasi identitas lembaga, kontak, dan kop kuitansi'}
+                </p>
+              </div>
+            </header>
 
         {/* TAB 1: OVERVIEW DASHBOARD */}
         {activeTab === 'dashboard' && (
@@ -2084,7 +2131,112 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
           </div>
         )}
 
-      </main>
+          </div>
+        </main>
+      </div>
+
+      {/* MODAL CEPAT GANTI KATA SANDI (Dapat diakses langsung dari Topbar) */}
+      {showPasswordModal && (
+        <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', borderRadius: '20px', padding: '28px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#fef3c7', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Lock size={18} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', margin: 0 }}>Ganti Kata Sandi</h3>
+                  <p style={{ fontSize: '11.5px', color: '#64748b', margin: 0 }}>@{adminSession?.username || 'admin'}</p>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setShowPasswordModal(false)} 
+                style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '20px' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <p style={{ fontSize: '12.5px', color: '#64748b', marginBottom: '18px' }}>
+              Perbarui kata sandi akun admin pengurus untuk melindungi akses dashboard yayasan.
+            </p>
+
+            {passwordStatus.message && (
+              <div style={{
+                padding: '10px 14px',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                fontSize: '12.5px',
+                fontWeight: 600,
+                background: passwordStatus.type === 'success' ? '#ecfdf5' : '#fef2f2',
+                color: passwordStatus.type === 'success' ? '#047857' : '#b91c1c',
+                border: `1px solid ${passwordStatus.type === 'success' ? '#a7f3d0' : '#fecaca'}`
+              }}>
+                {passwordStatus.type === 'success' ? '✅ ' : '⚠️ '}
+                {passwordStatus.message}
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword}>
+              <div className="form-group">
+                <label>Kata Sandi Saat Ini (Lama) *</label>
+                <input
+                  type="password"
+                  className="form-input"
+                  placeholder="Masukkan kata sandi lama"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Kata Sandi Baru * (Minimal 6 karakter)</label>
+                <input
+                  type="password"
+                  className="form-input"
+                  placeholder="Masukkan kata sandi baru"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Konfirmasi Kata Sandi Baru *</label>
+                <input
+                  type="password"
+                  className="form-input"
+                  placeholder="Ketik ulang kata sandi baru"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  required
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setShowPasswordModal(false)}
+                  className="btn"
+                  style={{ flex: 1, background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1' }}
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn btn-primary" 
+                  style={{ flex: 1 }}
+                  disabled={passwordLoading}
+                >
+                  {passwordLoading ? 'Menyimpan...' : 'Simpan Sandi'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* MODAL 1: LIGHTBOX PRATINJAU GAMBAR BUKTI TRANSFER */}
       {previewImage && (
