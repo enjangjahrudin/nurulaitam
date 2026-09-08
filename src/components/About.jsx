@@ -93,15 +93,17 @@ export default function About() {
 
           {/* Sisi Kanan: Deskripsi Sejarah & Prestasi */}
           <ScrollReveal delay={300}>
-            <div className="about-text" style={{ textAlign: 'left' }}>
-              <h3>Sejarah Singkat</h3>
-              <p className="about-desc">
-                Didirikan pada tahun {info.foundedYear} di Karawang, <strong>{info.name}</strong> lahir atas kepedulian mendalam terhadap anak-anak yatim piatu yang dipelopori oleh para Pendiri yaitu <strong>KH. Zenal Abidin (Alm)</strong> dan <strong>Ustzh. Hj. Ukhronah (Alm)</strong>.
-                Di bawah kepemimpinan Ketua Yayasan saat ini, <strong>{info.chairman}</strong>, lembaga ini berkembang menjadi salah satu asrama panti asuhan yang dipercaya dan tertib di Kabupaten Karawang.
-              </p>
-              <p className="about-desc" style={{ marginBottom: '32px' }}>
-                Alamat operasional kami berlokasi di <strong>{info.address}</strong>, sebuah tempat asri dan kondusif tempat anak-anak asuh dibekali pendidikan formal sekolah, bimbingan mengaji Al-Qur'an harian, hingga latihan wirausaha kemandirian.
-              </p>
+            <div className="about-text">
+              <div className="about-history" style={{ textAlign: 'center' }}>
+                <h3 style={{ textAlign: 'center' }}>Sejarah Singkat</h3>
+                <p className="about-desc" style={{ textAlign: 'center', lineHeight: '1.75' }}>
+                  Didirikan pada tahun {info.foundedYear} di Karawang, <strong>{info.name}</strong> lahir atas kepedulian mendalam terhadap anak-anak yatim piatu yang dipelopori oleh para Pendiri yaitu <strong>KH. Zenal Abidin (Alm)</strong> dan <strong>Ustzh. Hj. Ukhronah (Alm)</strong>.
+                  Di bawah kepemimpinan Ketua Yayasan saat ini, <strong>{info.chairman}</strong>, lembaga ini berkembang menjadi salah satu asrama panti asuhan yang dipercaya dan tertib di Kabupaten Karawang.
+                </p>
+                <p className="about-desc" style={{ textAlign: 'center', lineHeight: '1.75', marginBottom: '32px' }}>
+                  Alamat operasional kami berlokasi di <strong>{info.address}</strong>, sebuah tempat asri dan kondusif tempat anak-anak asuh dibekali pendidikan formal sekolah, bimbingan mengaji Al-Qur'an harian, hingga latihan wirausaha kemandirian.
+                </p>
+              </div>
 
               {/* List Prestasi */}
               <div className="prestasi-title">
