@@ -1442,73 +1442,91 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
             </div>
 
             <div className="table-container">
-              <table>
+              <table className="ledger-table">
                 <thead>
                   <tr>
-                    <th>Invoice</th>
+                    <th style={{ width: '92px' }}>Invoice</th>
                     <th>Nama Donatur</th>
-                    <th>Alamat</th>
-                    <th>WhatsApp</th>
-                    <th>Jumlah</th>
+                    <th style={{ width: '85px' }}>Alamat</th>
+                    <th style={{ width: '95px' }}>WhatsApp</th>
+                    <th style={{ width: '95px' }}>Jumlah</th>
                     <th>Program</th>
-                    <th>Asal</th>
-                    <th>Status</th>
-                    <th style={{ textAlign: 'center' }}>Kuitansi (PDF)</th>
+                    <th style={{ width: '68px', textAlign: 'center' }}>Asal</th>
+                    <th style={{ width: '78px', textAlign: 'center' }}>Status</th>
+                    <th style={{ textAlign: 'center', width: '120px' }}>Kuitansi</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredLedger.map((item) => (
                     <tr key={item.id}>
                       <td style={{ whiteSpace: 'nowrap' }}>
-                        <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'var(--color-emerald-700)' }}>
+                        <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', fontWeight: 700, fontSize: '11.5px', color: '#047857' }}>
                           {item.invoice_number || 'N/A'}
                         </span>
                       </td>
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        <strong>{item.donor_name}</strong>
+                      <td>
+                        <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '12px', lineHeight: 1.35, wordBreak: 'break-word', minWidth: '130px', maxWidth: '200px' }}>
+                          {item.donor_name}
+                        </div>
                       </td>
                       <td>
-                        <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 500 }}>
+                        <span style={{ fontSize: '11.5px', color: '#64748b', display: 'inline-block', lineHeight: 1.3, maxWidth: '100px' }}>
                           {item.donor_address || '-'}
                         </span>
                       </td>
-                      <td style={{ whiteSpace: 'nowrap' }}>{item.donor_whatsapp}</td>
                       <td style={{ whiteSpace: 'nowrap' }}>
-                        <strong style={{ color: 'var(--color-emerald-800)' }}>{formatRupiah(item.amount).replace(',00', '')}</strong>
-                      </td>
-                      <td>{item.program_name}</td>
-                      <td style={{ whiteSpace: 'nowrap' }}>
-                        <span className={`badge ${item.donation_type === 'ONLINE' ? 'badge-online' : 'badge-offline'}`}>
-                          {item.donation_type}
+                        <span style={{ fontSize: '11.5px', color: '#475569' }}>
+                          {item.donor_whatsapp || '-'}
                         </span>
                       </td>
                       <td style={{ whiteSpace: 'nowrap' }}>
-                        <span className={`badge ${item.status === 'APPROVED' ? 'badge-approved' : item.status === 'PENDING' ? 'badge-pending' : 'badge-rejected'}`}>
+                        <strong style={{ color: '#047857', fontSize: '12px' }}>
+                          {formatRupiah(item.amount).replace(',00', '')}
+                        </strong>
+                      </td>
+                      <td>
+                        <span style={{ fontSize: '11.5px', color: '#334155', display: 'inline-block', lineHeight: 1.3, minWidth: '110px', maxWidth: '170px' }}>
+                          {item.program_name}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <span 
+                          className={`badge ${item.donation_type === 'ONLINE' ? 'badge-online' : 'badge-offline'}`}
+                          style={{ fontSize: '10px', padding: '2px 6px', fontWeight: 600 }}
+                        >
+                          {item.donation_type}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <span 
+                          className={`badge ${item.status === 'APPROVED' ? 'badge-approved' : item.status === 'PENDING' ? 'badge-pending' : 'badge-rejected'}`}
+                          style={{ fontSize: '10px', padding: '2px 6px', fontWeight: 600 }}
+                        >
                           {item.status}
                         </span>
                       </td>
                       <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                         {item.status === 'APPROVED' ? (
-                          <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'center' }}>
+                          <div style={{ display: 'inline-flex', gap: '4px', justifyContent: 'center' }}>
                             <button 
                               onClick={() => handlePrintPDF(item)}
                               className="btn btn-sm btn-outline"
-                              style={{ padding: '6px 10px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}
+                              style={{ padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '11px', borderRadius: '6px' }}
                               title="Cetak Kuitansi Resmi"
                             >
-                              <Printer size={13} style={{ color: 'var(--color-emerald-700)' }} /> Cetak
+                              <Printer size={12} style={{ color: '#047857' }} /> Cetak
                             </button>
                             <button 
                               onClick={() => handleDownloadPDF(item)}
                               className="btn btn-sm btn-outline"
-                              style={{ padding: '6px 10px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}
+                              style={{ padding: '3px 8px', display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '11px', borderRadius: '6px' }}
                               title="Unduh File PDF Kuitansi"
                             >
-                              <Download size={13} style={{ color: 'var(--color-gold-600)' }} /> Unduh
+                              <Download size={12} style={{ color: '#b45309' }} /> Unduh
                             </button>
                           </div>
                         ) : (
-                          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>Unverified</span>
+                          <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>Unverified</span>
                         )}
                       </td>
                     </tr>
@@ -1516,7 +1534,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                   
                   {filteredLedger.length === 0 && (
                     <tr>
-                      <td colSpan="8" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                      <td colSpan="9" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                         Tidak ada riwayat donasi yang cocok dengan pencarian.
                       </td>
                     </tr>
