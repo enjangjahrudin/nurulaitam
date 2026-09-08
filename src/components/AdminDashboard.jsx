@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, DollarSign, Users, Award, FileText, CheckCircle, XCircle, PlusCircle, Search, Download, LogOut, Upload, User, Phone, Mail, Image as ImageIcon, Printer, Lock, Menu, ChevronLeft, ChevronRight, ArrowLeft, CreditCard, Edit, Trash2 } from 'lucide-react';
+import { Layout, DollarSign, Users, Award, FileText, CheckCircle, XCircle, PlusCircle, Search, Download, LogOut, Upload, User, Phone, Mail, Image as ImageIcon, Printer, Lock, Menu, X, ChevronLeft, ChevronRight, ArrowLeft, CreditCard, Edit, Trash2 } from 'lucide-react';
 import ReceiptPDF from './ReceiptPDF';
 
 export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
@@ -7,13 +7,25 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     return localStorage.getItem('admin_sidebar_collapsed') === 'true';
   });
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const toggleSidebar = () => {
-    setSidebarCollapsed(prev => {
-      const next = !prev;
-      localStorage.setItem('admin_sidebar_collapsed', String(next));
-      return next;
-    });
+    if (window.innerWidth <= 768) {
+      setMobileDrawerOpen(prev => !prev);
+    } else {
+      setSidebarCollapsed(prev => {
+        const next = !prev;
+        localStorage.setItem('admin_sidebar_collapsed', String(next));
+        return next;
+      });
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (window.innerWidth <= 768) {
+      setMobileDrawerOpen(false);
+    }
   };
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -892,14 +904,35 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
 
       {/* BODY WRAPPER (SIDEBAR + MAIN CONTENT AREA) */}
       <div className="admin-body">
-        {/* COLLAPSIBLE SIDEBAR */}
-        <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        {/* Mobile Backdrop when drawer is open */}
+        {mobileDrawerOpen && (
+          <div 
+            className="admin-mobile-backdrop" 
+            onClick={() => setMobileDrawerOpen(false)} 
+          />
+        )}
+
+        {/* COLLAPSIBLE & MOBILE OFF-CANVAS SIDEBAR */}
+        <aside className={`admin-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileDrawerOpen ? 'mobile-open' : ''}`}>
+          {/* Mobile Close Button on Sidebar Header */}
+          <div className="admin-sidebar-mobile-close">
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9' }}>Menu Admin</span>
+            <button 
+              type="button" 
+              onClick={() => setMobileDrawerOpen(false)}
+              style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '4px' }}
+              title="Tutup Menu"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
           {/* Menu Bagian 1: TRANSAKSI */}
           <div className="sidebar-section-title">Keuangan & Donasi</div>
           <ul className="sidebar-menu">
             <li>
               <button 
-                onClick={() => setActiveTab('dashboard')} 
+                onClick={() => handleTabChange('dashboard')} 
                 className={`sidebar-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
                 title="Ringkasan Analitik"
               >
@@ -909,7 +942,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
             </li>
             <li>
               <button 
-                onClick={() => setActiveTab('pending')} 
+                onClick={() => handleTabChange('pending')} 
                 className={`sidebar-btn ${activeTab === 'pending' ? 'active' : ''}`}
                 title="Antrean Verifikasi"
               >
@@ -925,7 +958,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
             </li>
             <li>
               <button 
-                onClick={() => setActiveTab('offline')} 
+                onClick={() => handleTabChange('offline')} 
                 className={`sidebar-btn ${activeTab === 'offline' ? 'active' : ''}`}
                 title="Input Donasi Offline"
               >
@@ -935,7 +968,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
             </li>
             <li>
               <button 
-                onClick={() => setActiveTab('ledger')} 
+                onClick={() => handleTabChange('ledger')} 
                 className={`sidebar-btn ${activeTab === 'ledger' ? 'active' : ''}`}
                 title="Buku Kas Ledger"
               >
@@ -945,7 +978,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
             </li>
             <li>
               <button 
-                onClick={() => setActiveTab('methods')} 
+                onClick={() => handleTabChange('methods')} 
                 className={`sidebar-btn ${activeTab === 'methods' ? 'active' : ''}`}
                 title="Pilihan Transfer & Bank"
               >
@@ -960,7 +993,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
           <ul className="sidebar-menu">
             <li>
               <button 
-                onClick={() => setActiveTab('articles')} 
+                onClick={() => handleTabChange('articles')} 
                 className={`sidebar-btn ${activeTab === 'articles' ? 'active' : ''}`}
                 title="Kelola Artikel"
               >
@@ -970,7 +1003,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
             </li>
             <li>
               <button 
-                onClick={() => setActiveTab('gallery')} 
+                onClick={() => handleTabChange('gallery')} 
                 className={`sidebar-btn ${activeTab === 'gallery' ? 'active' : ''}`}
                 title="Kelola Galeri"
               >
@@ -980,7 +1013,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
             </li>
             <li>
               <button 
-                onClick={() => setActiveTab('programs')} 
+                onClick={() => handleTabChange('programs')} 
                 className={`sidebar-btn ${activeTab === 'programs' ? 'active' : ''}`}
                 title="Kelola Program & Prestasi"
               >
@@ -995,7 +1028,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
           <ul className="sidebar-menu">
             <li>
               <button 
-                onClick={() => setActiveTab('admins')} 
+                onClick={() => handleTabChange('admins')} 
                 className={`sidebar-btn ${activeTab === 'admins' ? 'active' : ''}`}
                 title="Kelola Pengurus"
               >
@@ -1005,7 +1038,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
             </li>
             <li>
               <button 
-                onClick={() => setActiveTab('settings')} 
+                onClick={() => handleTabChange('settings')} 
                 className={`sidebar-btn ${activeTab === 'settings' ? 'active' : ''}`}
                 title="Pengaturan Yayasan"
               >

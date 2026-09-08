@@ -112,101 +112,196 @@ export default function Navbar({ currentView, navigateTo, adminSession, onLogout
           </ul>
 
           {/* CTA & Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="navbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Tombol Donasi Desktop */}
             <button 
               onClick={() => navigateTo('donate')} 
-              className="btn btn-primary btn-sm btn-gold"
+              className="btn btn-primary btn-sm btn-gold nav-donate-desktop"
               style={{ fontWeight: 700 }}
             >
               <Heart size={16} fill="currentColor" /> Donasi Sekarang
             </button>
 
-            {adminSession ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {/* Tombol Donasi Mini Khusus Mobile */}
+            <button 
+              onClick={() => navigateTo('donate')} 
+              className="btn btn-primary btn-sm btn-gold nav-donate-mobile"
+              style={{ fontWeight: 700 }}
+              title="Salurkan Donasi"
+            >
+              <Heart size={14} fill="currentColor" /> Donasi
+            </button>
+
+            {/* Tombol Admin Desktop */}
+            <div className="nav-admin-desktop">
+              {adminSession ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button 
+                    onClick={() => navigateTo('admin-dashboard')} 
+                    className="btn btn-outline btn-sm"
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Layout size={16} /> Panel Admin
+                  </button>
+                  <button 
+                    onClick={onLogout} 
+                    className="btn btn-sm btn-outline" 
+                    style={{ borderColor: 'hsl(0, 80%, 40%)', color: 'hsl(0, 80%, 40%)', padding: '8px' }}
+                    title="Logout Admin"
+                  >
+                    <LogOut size={16} />
+                  </button>
+                </div>
+              ) : (
                 <button 
-                  onClick={() => navigateTo('admin-dashboard')} 
+                  onClick={() => navigateTo('admin-login')} 
                   className="btn btn-outline btn-sm"
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                  style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  title="Login Pengurus"
                 >
-                  <Layout size={16} /> Panel Admin
+                  <Lock size={15} /> <span style={{ fontSize: '13px' }}>Admin</span>
                 </button>
-                <button 
-                  onClick={onLogout} 
-                  className="btn btn-sm btn-outline" 
-                  style={{ borderColor: 'hsl(0, 80%, 40%)', color: 'hsl(0, 80%, 40%)', padding: '8px' }}
-                  title="Logout Admin"
-                >
-                  <LogOut size={16} />
-                </button>
-              </div>
-            ) : (
-              <button 
-                onClick={() => navigateTo('admin-login')} 
-                className="btn btn-outline btn-sm"
-                style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                title="Login Pengurus"
-              >
-                <Lock size={15} /> <span style={{ fontSize: '13px' }}>Admin</span>
-              </button>
-            )}
+              )}
+            </div>
 
             {/* Mobile Menu Toggle */}
             <button 
               className="btn btn-outline btn-sm mobile-toggle" 
-              style={{ display: 'none', padding: '8px' }} 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu navigasi"
             >
-              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </nav>
       </div>
 
-      {/* Mobile Dropdown Menu */}
+      {/* Mobile Drawer / Overlay Menu */}
       {mobileMenuOpen && (
-        <div className="container" style={{ marginTop: '8px' }}>
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '20px', 
-            padding: '24px', 
-            boxShadow: 'var(--shadow-lg)',
-            border: '1px solid rgba(0,0,0,0.05)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px'
-          }}>
-            <a href="#tentang" className="navbar-link" onClick={() => handleNavClick('home')}>Beranda</a>
-            <a href="#program" className="navbar-link" onClick={() => {
-              navigateTo('home');
-              setMobileMenuOpen(false);
-              setTimeout(() => document.getElementById('program')?.scrollIntoView({ behavior: 'smooth' }), 100);
-            }}>Program</a>
-            <a href="#galeri" className="navbar-link" onClick={() => {
-              navigateTo('home');
-              setMobileMenuOpen(false);
-              setTimeout(() => document.getElementById('galeri')?.scrollIntoView({ behavior: 'smooth' }), 100);
-            }}>Galeri</a>
-            <a href="#transparansi" className="navbar-link" onClick={() => handleNavClick('transparency')}>Transparansi Laporan</a>
-            <a href="#artikel" className="navbar-link" onClick={() => {
-              navigateTo('home');
-              setMobileMenuOpen(false);
-              setTimeout(() => document.getElementById('artikel')?.scrollIntoView({ behavior: 'smooth' }), 100);
-            }}>Artikel</a>
+        <div className="mobile-menu-overlay" onClick={() => setMobileMenuOpen(false)}>
+          <div className="mobile-menu-container" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-menu-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <img src="/logo.png" alt="Logo" style={{ width: '28px', height: '28px', objectFit: 'contain' }} />
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '14px', color: 'var(--color-emerald-950)' }}>
+                    Nurul Aitam
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#64748b' }}>
+                    Karawang
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={() => setMobileMenuOpen(false)}
+                className="mobile-menu-close"
+                title="Tutup Menu"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <nav className="mobile-menu-links">
+              <a 
+                href="#tentang" 
+                className={`mobile-nav-link ${currentView === 'home' ? 'active' : ''}`}
+                onClick={() => handleNavClick('home')}
+              >
+                <span>🏠</span> Beranda
+              </a>
+              <a 
+                href="#tentang" 
+                className="mobile-nav-link"
+                onClick={() => {
+                  navigateTo('home');
+                  setMobileMenuOpen(false);
+                  setTimeout(() => document.getElementById('tentang')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                }}
+              >
+                <span>🏛️</span> Profil Yayasan
+              </a>
+              <a 
+                href="#program" 
+                className="mobile-nav-link"
+                onClick={() => {
+                  navigateTo('home');
+                  setMobileMenuOpen(false);
+                  setTimeout(() => document.getElementById('program')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                }}
+              >
+                <span>✨</span> Program Asuhan
+              </a>
+              <a 
+                href="#galeri" 
+                className="mobile-nav-link"
+                onClick={() => {
+                  navigateTo('home');
+                  setMobileMenuOpen(false);
+                  setTimeout(() => document.getElementById('galeri')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                }}
+              >
+                <span>📷</span> Galeri Foto
+              </a>
+              <a 
+                href="#transparansi" 
+                className={`mobile-nav-link ${currentView === 'transparency' ? 'active' : ''}`}
+                onClick={() => handleNavClick('transparency')}
+              >
+                <span>📊</span> Transparansi Laporan
+              </a>
+              <a 
+                href="#artikel" 
+                className="mobile-nav-link"
+                onClick={() => {
+                  navigateTo('home');
+                  setMobileMenuOpen(false);
+                  setTimeout(() => document.getElementById('artikel')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                }}
+              >
+                <span>📰</span> Kabar & Artikel
+              </a>
+            </nav>
+
+            <div className="mobile-menu-divider" />
+
+            <div className="mobile-menu-actions">
+              <button 
+                onClick={() => handleNavClick('donate')} 
+                className="btn btn-gold btn-mobile-action"
+              >
+                <Heart size={16} fill="currentColor" /> Salurkan Donasi Sekarang
+              </button>
+
+              {adminSession ? (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    onClick={() => handleNavClick('admin-dashboard')} 
+                    className="btn btn-outline btn-mobile-action"
+                    style={{ flex: 1 }}
+                  >
+                    <Layout size={16} /> Panel Admin
+                  </button>
+                  <button 
+                    onClick={() => { onLogout(); setMobileMenuOpen(false); }} 
+                    className="btn btn-outline" 
+                    style={{ borderColor: '#ef4444', color: '#ef4444', padding: '12px' }}
+                    title="Keluar"
+                  >
+                    <LogOut size={16} />
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => handleNavClick('admin-login')} 
+                  className="btn btn-outline btn-mobile-action"
+                >
+                  <Lock size={15} /> Masuk Panel Pengurus (Admin)
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
-
-      {/* Custom Inline CSS rule for Mobile View Hamburger Toggle display */}
-      <style>{`
-        @media (max-width: 768px) {
-          .navbar-nav {
-            display: none !important;
-          }
-          .mobile-toggle {
-            display: inline-flex !important;
-          }
-        }
-      `}</style>
     </header>
   );
 }
