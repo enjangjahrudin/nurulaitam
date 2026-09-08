@@ -2117,22 +2117,23 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
         )}
 
         {/* TAB: KELOLA PILIHAN TRANSFER & REKENING BANK */}
+        {/* TAB: KELOLA PILIHAN TRANSFER & REKENING BANK */}
         {activeTab === 'methods' && (
           <div style={{ textAlign: 'left' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px', alignItems: 'start' }}>
+            <div className="methods-grid-layout">
               
               {/* Kolom 1: Form Tambah / Edit Pilihan Transfer */}
               <div className="donate-card" style={{ margin: 0, padding: 0 }}>
-                <div className="donate-form-body" style={{ padding: '24px' }}>
+                <div className="donate-form-body" style={{ padding: '18px 20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#ecfdf5', color: '#047857', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <CreditCard size={18} />
+                    <div style={{ width: '34px', height: '34px', borderRadius: '8px', background: '#ecfdf5', color: '#047857', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <CreditCard size={17} />
                     </div>
                     <div>
-                      <h3 className="serif-title" style={{ fontSize: '18px', color: 'var(--color-emerald-950)', margin: 0 }}>
+                      <h3 className="serif-title" style={{ fontSize: '16.5px', color: 'var(--color-emerald-950)', margin: 0 }}>
                         {editingMethodId ? 'Edit Pilihan Transfer' : 'Tambah Pilihan Transfer'}
                       </h3>
-                      <p style={{ fontSize: '12.5px', color: 'var(--text-muted)', margin: 0 }}>
+                      <p style={{ fontSize: '11.5px', color: 'var(--text-muted)', margin: 0 }}>
                         {editingMethodId ? 'Perbarui data rekening atau saluran pembayaran' : 'Daftarkan saluran pembayaran baru ke dalam sistem'}
                       </p>
                     </div>
@@ -2140,11 +2141,11 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
 
                   {methodStatus.message && (
                     <div style={{
-                      padding: '12px 16px',
+                      padding: '10px 14px',
                       borderRadius: '8px',
-                      marginTop: '16px',
-                      marginBottom: '16px',
-                      fontSize: '13px',
+                      marginTop: '12px',
+                      marginBottom: '12px',
+                      fontSize: '12px',
                       fontWeight: 600,
                       background: methodStatus.type === 'success' ? '#ecfdf5' : '#fef2f2',
                       color: methodStatus.type === 'success' ? '#047857' : '#b91c1c',
@@ -2155,9 +2156,9 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                     </div>
                   )}
 
-                  <form onSubmit={handleSavePaymentMethod} style={{ marginTop: '16px' }}>
+                  <form onSubmit={handleSavePaymentMethod} style={{ marginTop: '12px' }}>
                     <div className="form-group">
-                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>
                         Nama Metode / Saluran Transfer *
                       </label>
                       <input
@@ -2171,7 +2172,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                     </div>
 
                     <div className="form-group">
-                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>
                         Tipe Saluran Pembayaran *
                       </label>
                       <select
@@ -2187,7 +2188,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                     </div>
 
                     <div className="form-group">
-                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>
                         Nomor Rekening / No. Akun (Opsional)
                       </label>
                       <input
@@ -2200,7 +2201,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                     </div>
 
                     <div className="form-group">
-                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>
                         Atas Nama Rekening / Pemilik Akun (Opsional)
                       </label>
                       <input
@@ -2213,7 +2214,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                     </div>
 
                     <div className="form-group">
-                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>
                         Status Keaktifan
                       </label>
                       <select
@@ -2227,7 +2228,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                     </div>
 
                     <div className="form-group">
-                      <label style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>
+                      <label style={{ fontSize: '12px', fontWeight: 600, color: '#334155' }}>
                         Instruksi Singkat / Petunjuk Transfer (Opsional)
                       </label>
                       <textarea
@@ -2240,11 +2241,11 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                       />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                       <button
                         type="submit"
                         className="btn btn-primary"
-                        style={{ flex: 1, padding: '12px' }}
+                        style={{ flex: 1, padding: '10px', fontSize: '12.5px' }}
                         disabled={methodLoading}
                       >
                         {methodLoading ? 'Menyimpan...' : (editingMethodId ? 'Simpan Perubahan' : 'Tambah Metode')}
@@ -2258,7 +2259,7 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                             setMethodStatus({ type: '', message: '' });
                           }}
                           className="btn btn-outline"
-                          style={{ padding: '12px 18px' }}
+                          style={{ padding: '10px 14px', fontSize: '12.5px' }}
                         >
                           Batal
                         </button>
@@ -2269,31 +2270,31 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
               </div>
 
               {/* Kolom 2: Daftar Pilihan Transfer & Rekening Bank */}
-              <div className="ledger-box" style={{ padding: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <div className="ledger-box" style={{ padding: '18px 20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
                         Daftar Pilihan Transfer & Saluran
                       </h3>
-                      <span style={{ fontSize: '12px', fontWeight: 700, background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '9999px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, background: '#f1f5f9', color: '#475569', padding: '1px 7px', borderRadius: '9999px' }}>
                         {paymentMethodsList.length}
                       </span>
                     </div>
-                    <p style={{ fontSize: '13px', color: '#64748b', margin: '3px 0 0 0' }}>
+                    <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0 0' }}>
                       Pilihan yang aktif akan otomatis muncul pada dropdown formulir donasi.
                     </p>
                   </div>
                 </div>
 
                 <div className="table-container">
-                  <table>
+                  <table className="ledger-table">
                     <thead>
                       <tr>
                         <th>Nama & Tipe</th>
                         <th>No. Rekening & A/N</th>
-                        <th style={{ textAlign: 'center' }}>Status</th>
-                        <th style={{ textAlign: 'center', width: '130px' }}>Aksi</th>
+                        <th style={{ textAlign: 'center', width: '70px' }}>Status</th>
+                        <th style={{ textAlign: 'center', width: '120px' }}>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -2309,19 +2310,19 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                         return (
                           <tr key={m.id}>
                             <td>
-                              <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '14px' }}>
+                              <div style={{ fontWeight: 600, color: '#0f172a', fontSize: '12px', lineHeight: 1.35, wordBreak: 'break-word', minWidth: '120px' }}>
                                 {m.name}
                               </div>
                               <span style={{
                                 display: 'inline-block',
-                                fontSize: '11px',
+                                fontSize: '10px',
                                 fontWeight: 600,
                                 background: badge.bg,
                                 color: badge.color,
                                 border: `1px solid ${badge.border}`,
-                                padding: '1px 8px',
+                                padding: '1px 6px',
                                 borderRadius: '9999px',
-                                marginTop: '4px'
+                                marginTop: '3px'
                               }}>
                                 {badge.label}
                               </span>
@@ -2329,34 +2330,34 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                             <td>
                               {m.account_number ? (
                                 <>
-                                  <div style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
+                                  <div style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace', fontSize: '11.5px', fontWeight: 700, color: '#0f172a' }}>
                                     {m.account_number}
                                   </div>
                                   {m.account_holder && (
-                                    <div style={{ fontSize: '11.5px', color: '#64748b' }}>
+                                    <div style={{ fontSize: '11px', color: '#64748b', lineHeight: 1.25, marginTop: '2px', wordBreak: 'break-word' }}>
                                       a.n. {m.account_holder}
                                     </div>
                                   )}
                                 </>
                               ) : (
-                                <span style={{ fontSize: '12.5px', color: '#94a3b8', fontStyle: 'italic' }}>
+                                <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>
                                   Tanpa No. Rekening
                                 </span>
                               )}
                             </td>
-                            <td style={{ textAlign: 'center' }}>
+                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                               {m.is_active === 1 ? (
-                                <span style={{ display: 'inline-block', fontSize: '11.5px', fontWeight: 600, background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '2px 8px', borderRadius: '9999px' }}>
+                                <span style={{ display: 'inline-block', fontSize: '10px', fontWeight: 600, background: '#ecfdf5', color: '#047857', border: '1px solid #a7f3d0', padding: '2px 6px', borderRadius: '9999px' }}>
                                   Aktif
                                 </span>
                               ) : (
-                                <span style={{ display: 'inline-block', fontSize: '11.5px', fontWeight: 600, background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '2px 8px', borderRadius: '9999px' }}>
+                                <span style={{ display: 'inline-block', fontSize: '10px', fontWeight: 600, background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '2px 6px', borderRadius: '9999px' }}>
                                   Non-Aktif
                                 </span>
                               )}
                             </td>
-                            <td style={{ textAlign: 'center' }}>
-                              <div style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                              <div style={{ display: 'inline-flex', gap: '4px', justifyContent: 'center' }}>
                                 <button
                                   type="button"
                                   onClick={() => handleEditPaymentMethod(m)}
@@ -2364,18 +2365,18 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                                     background: '#ffffff',
                                     color: '#0284c7',
                                     border: '1px solid #bae6fd',
-                                    padding: '5px 10px',
+                                    padding: '3px 8px',
                                     borderRadius: '6px',
-                                    fontSize: '12px',
+                                    fontSize: '11px',
                                     fontWeight: 600,
                                     cursor: 'pointer',
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '4px'
+                                    gap: '3px'
                                   }}
                                   title="Edit pilihan transfer ini"
                                 >
-                                  <Edit size={13} />
+                                  <Edit size={12} />
                                   Edit
                                 </button>
                                 <button
@@ -2385,18 +2386,18 @@ export default function AdminDashboard({ adminSession, onLogout, navigateTo }) {
                                     background: '#ffffff',
                                     color: '#ef4444',
                                     border: '1px solid #fecaca',
-                                    padding: '5px 10px',
+                                    padding: '3px 8px',
                                     borderRadius: '6px',
-                                    fontSize: '12px',
+                                    fontSize: '11px',
                                     fontWeight: 600,
                                     cursor: 'pointer',
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '4px'
+                                    gap: '3px'
                                   }}
                                   title="Hapus pilihan transfer ini"
                                 >
-                                  <Trash2 size={13} />
+                                  <Trash2 size={12} />
                                   Hapus
                                 </button>
                               </div>
