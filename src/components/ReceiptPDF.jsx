@@ -159,7 +159,7 @@ export default function ReceiptPDF({ donation, settings }) {
         {/* Tanda Tangan & Seal Pengesahan */}
         <div className="receipt-sign-box">
           <div className="receipt-date">Karawang, {formatDate(donation.verified_at || donation.created_at)}</div>
-          <div className="receipt-sign-role">Ketua Yayasan</div>
+          <div className="receipt-sign-role">Ketua LKSA</div>
           
           {/* Tanda Tangan Tulis Indah (SVG Representatif) */}
           <svg className="receipt-signature-img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: '#092e1e' }}>

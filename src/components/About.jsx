@@ -68,7 +68,7 @@ export default function About() {
                 />
               </div>
               <h4 className="leader-name">{info.chairman}</h4>
-              <div className="leader-role">Ketua Yayasan</div>
+              <div className="leader-role">Ketua LKSA</div>
               
               <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px', lineHeight: '1.6' }}>
                 "Mengasuh anak yatim bukan sekadar memberi mereka makan dan pakaian, melainkan memberikan rasa aman, menumbuhkan rasa percaya diri, dan mendidik akidah serta akhlak mereka agar menjadi penerus bangsa yang membanggakan."
@@ -98,7 +98,7 @@ export default function About() {
                 <h3 style={{ textAlign: 'center' }}>Sejarah Singkat</h3>
                 <p className="about-desc" style={{ textAlign: 'center', lineHeight: '1.75' }}>
                   Didirikan pada tahun {info.foundedYear} di Karawang, <strong>{info.name}</strong> lahir atas kepedulian mendalam terhadap anak-anak yatim piatu yang dipelopori oleh para Pendiri yaitu <strong>KH. Zenal Abidin (Alm)</strong> dan <strong>Ustzh. Hj. Ukhronah (Alm)</strong>.
-                  Di bawah kepemimpinan Ketua Yayasan saat ini, <strong>{info.chairman}</strong>, lembaga ini berkembang menjadi salah satu asrama panti asuhan yang dipercaya dan tertib di Kabupaten Karawang.
+                  Di bawah kepemimpinan Ketua LKSA saat ini, <strong>{info.chairman}</strong>, lembaga ini berkembang menjadi salah satu asrama panti asuhan yang dipercaya dan tertib di Kabupaten Karawang.
                 </p>
                 <p className="about-desc" style={{ textAlign: 'center', lineHeight: '1.75', marginBottom: '32px' }}>
                   Alamat operasional kami berlokasi di <strong>{info.address}</strong>, sebuah tempat asri dan kondusif tempat anak-anak asuh dibekali pendidikan formal sekolah, bimbingan mengaji Al-Qur'an harian, hingga latihan wirausaha kemandirian.
